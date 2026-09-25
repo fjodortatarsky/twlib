@@ -477,7 +477,7 @@ a.letter-link:hover {
 }
 
 .publication-item {
-    padding: 0.6rem 0;
+    padding: 1rem 1rem ;
     border-bottom: 1px dashed var(--border-soft);
 }
 
@@ -520,7 +520,7 @@ a.letter-link:hover {
 
 .publication-title {
     font-size: 1rem;
-    margin: 0 0 1.2rem;
+    margin: 0 0 0.4rem;
     color: var(--wood-dark);
 }
 

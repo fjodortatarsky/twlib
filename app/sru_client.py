@@ -207,7 +207,7 @@ def get_department_prefixes_for_letter(letter: str) -> list[dict] | None:
     
     Фильтрует только термины, начинающиеся с указанной буквы.
     """
-    scan_clause = f'cuba.Department3idx={letter}'
+    scan_clause = f'cuba.CorpAuthor3idx={letter}'
     terms = department_authority.scan(scan_clause, maximum_terms=100)
     if terms is None:
         return None
@@ -222,7 +222,7 @@ def get_department_prefixes_for_letter(letter: str) -> list[dict] | None:
 
 def get_departments_by_prefix(prefix: str) -> list | None:
     """Список подразделений, чьё название начинается с префикса."""
-    query = f'cuba.Department3idx="{prefix}"'
+    query = f'cuba.CorpAuthor3idx="{prefix}"'
     result = department_authority.search_retrieve(query, maximum_records=100)
     if result is None:
         return None

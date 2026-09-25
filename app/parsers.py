@@ -323,9 +323,9 @@ def parse_department_record(record) -> Department:
 
     # Название: 200$a
     name = ''
-    df_200_list = _find_datafields(record, '200')
+    df_200_list = _find_datafields(record, '210')
     if df_200_list:
-        name = _get_first_subfield(df_200_list[0], 'a') or ''
+        name = _get_first_subfield(df_200_list[0], 'b') or _get_first_subfield(df_200_list[0], 'a') or ''
 
     # Прежние названия: 500 (параллельные формы)
     alternative_names = []

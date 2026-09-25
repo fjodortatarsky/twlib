@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Главная — Труды учёных{% endblock %}
+{% block title %}Главная — Труды учёных ТПУ{% endblock %}
 {% block content %}
 
 <section class="search-section">
@@ -41,12 +41,8 @@
         <h2 class="index-title">Подразделения</h2>
         <div class="letter-grid">
             {% for item in department_letters %}
-                {% if item.has_depts %}
-                    <a href="{{ url_for('main.department_index', prefix=item.letter) }}"
-                       class="letter-link">{{ item.letter }}</a>
-                {% else %}
-                    <span class="letter-link letter-empty">{{ item.letter }}</span>
-                {% endif %}
+                 <a href="{{ url_for('main.department_index', prefix=item.letter) }}"
+                    class="letter-link">{{ item.letter }}</a>
             {% endfor %}
         </div>
     </section>
