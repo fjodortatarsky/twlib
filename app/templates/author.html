@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}{{ author.main_name_full or author.main_name }} — Труды учёных{% endblock %}
+{% block content %}
+
+<nav class="breadcrumbs">
+    <a href="{{ url_for('main.index') }}">Главная</a>
+    <span class="sep">›</span>
+    <span class="current">{{ author.main_name_full or author.main_name }}</span>
+</nav>
+
+<section class="author-header">
+
+    <div class="author-photo-wrap">
+        {% if author.photo_url %}
+            <img src="{{ author.photo_url }}" alt="Фото {{ author.main_name_full }}" class="author-photo">
+        {% else %}
+            <div class="author-photo-placeholder">
+                {{ (author.main_name_full or author.main_name or '?')[0] }}
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="author-info">
+        <h1 class="author-name">{{ author.main_name_full or author.main_name }}</h1>
+
+        {% if author.birth_year %}
+            <p class="author-years">
+                {{ author.birth_year }}–{{ author.death_year or 'н. вр.' }}
+            </p>
+        {% endif %}
+
+        {% if author.description %}
+            <p class="author-description">{{ author.description }}</p>
+        {% endif %}
+
+        {% if author.orcid %}
+            <p class="author-orcid">
+                ORCID: <a href="https://orcid.org/{{ author.orcid }}" target="_blank" rel="noopener">{{ author.orcid }}</a>
+            </p>
+        {% endif %}
+
+        {% if author.alternative_names %}
+            <div class="alternative-names">
+                <h3 class="alt-title">Другие формы имени</h3>
+                <ul>
+                    {% for alt in author.alternative_names %}
+                        <li>
+                            {{ alt.full or alt.name }}
+                            {% if alt.note %}<span class="alt-note">({{ alt.note }})</span>{% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    </div>
+
+</section>
+
+<div class="author-columns">
+
+    <section class="publications-section">
+        <div class="section-header">
+            <h2 class="section-title">Публикации автора</h2>
+            <div class="sort-controls">
+                <span class="sort-label">Сортировка:</span>
+                {% if sort == 'date' %}
+                    <span class="sort-current">по дате</span>
+                    <a href="?sort=title" class="sort-link">по названию</a>
+                {% else %}
+                    <a href="?sort=date" class="sort-link">по дате</a>
+                    <span class="sort-current">по названию</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <ul class="publication-list">
+            {% for pub in publications %}
+                <li class="publication-item">
+                    <a href="{{ url_for('main.publication', publication_id=pub.id) }}" class="publication-title">
+                        {{ pub.title }}{% if pub.subtitle %}: {{ pub.subtitle }}{% endif %}
+                    </a>
+                    <div class="publication-meta">
+                        {% if pub.authors %}
+                            {% for a in pub.authors %}
+                                {% if a.authority_id %}
+                                    <a href="{{ url_for('main.author', authority_id=a.authority_id) }}">{{ a.name }}</a>
+                                {% else %}
+                                    <span>{{ a.name }}</span>
+                                {% endif %}
+                                {% if not loop.last %}, {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                        {% if pub.year %}<span class="meta-year">{{ pub.year }}</span>{% endif %}
+                    </div>
+                </li>
+            {% else %}
+                <li class="empty-note">Публикации не найдены.</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <section class="about-section">
+        <h2 class="section-title">Публикации об авторе</h2>
+        <ul class="publication-list">
+            {% for pub in about %}
+                <li class="publication-item">
+                    <a href="{{ url_for('main.publication', publication_id=pub.id) }}" class="publication-title">
+                        {{ pub.title }}{% if pub.subtitle %}: {{ pub.subtitle }}{% endif %}
+                    </a>
+                    <div class="publication-meta">
+                        {% if pub.year %}<span class="meta-year">{{ pub.year }}</span>{% endif %}
+                    </div>
+                </li>
+            {% else %}
+                <li class="empty-note">Публикаций об авторе не найдено.</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+</div>
+
+{% endblock %}

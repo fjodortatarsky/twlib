@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Главная — Труды учёных{% endblock %}
+{% block content %}
+
+<section class="search-section">
+    <form action="{{ url_for('main.search') }}" method="get" class="search-form">
+        <select name="attr" class="search-attr">
+            <option value="author">Автор</option>
+            <option value="title">Заглавие</option>
+            <option value="department">Подразделение</option>
+        </select>
+        <input type="text" name="q" class="search-input" placeholder="Введите запрос" required>
+        <button type="submit" class="search-button">Искать</button>
+    </form>
+</section>
+
+{% if show_welcome %}
+<section class="welcome-block">
+    <h2 class="welcome-title">Добро пожаловать</h2>
+    <p>
+        Справочник «Труды учёных» собирает публикации сотрудников и исследователей.
+        Вы можете искать работы по автору, заглавию или подразделению,
+        просматривать алфавитные указатели и переходить к полным спискам трудов.
+    </p>
+</section>
+{% endif %}
+
+<div class="index-columns">
+
+    <section class="index-column">
+        <h2 class="index-title">Авторы</h2>
+        <div class="letter-grid">
+            {% for item in author_letters %}
+                {% if item.has_authors %}
+                    <a href="{{ url_for('main.author_index', prefix=item.letter) }}"
+                       class="letter-link">{{ item.letter }}</a>
+                {% else %}
+                    <span class="letter-link letter-empty">{{ item.letter }}</span>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="index-column">
+        <h2 class="index-title">Подразделения</h2>
+        <div class="letter-grid">
+            {% for item in department_letters %}
+                {% if item.has_depts %}
+                    <a href="{{ url_for('main.department_index', prefix=item.letter) }}"
+                       class="letter-link">{{ item.letter }}</a>
+                {% else %}
+                    <span class="letter-link letter-empty">{{ item.letter }}</span>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </section>
+
+</div>
+
+{% endblock %}

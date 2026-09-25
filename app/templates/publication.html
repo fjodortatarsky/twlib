@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}{{ publication.title }} — Труды учёных{% endblock %}
+{% block content %}
+
+<nav class="breadcrumbs">
+    <a href="{{ url_for('main.index') }}">Главная</a>
+    <span class="sep">›</span>
+    <span class="current">{{ publication.title }}</span>
+</nav>
+
+<article class="publication-detail">
+
+    <h1 class="publication-title">
+        {{ publication.title }}
+        {% if publication.subtitle %}
+            <span class="publication-subtitle">: {{ publication.subtitle }}</span>
+        {% endif %}
+    </h1>
+
+    <dl class="publication-details">
+
+        {% if publication.authors %}
+            <dt>Авторы</dt>
+            <dd>
+                {% for a in publication.authors %}
+                    {% if a.authority_id %}
+                        <a href="{{ url_for('main.author', authority_id=a.authority_id) }}">{{ a.name }}</a>
+                    {% else %}
+                        <span>{{ a.name }}</span>
+                    {% endif %}
+                    {% if not loop.last %}, {% endif %}
+                {% endfor %}
+            </dd>
+        {% endif %}
+
+        {% if publication.city %}
+            <dt>Город</dt>
+            <dd>{{ publication.city }}</dd>
+        {% endif %}
+
+        {% if publication.publisher %}
+            <dt>Издательство</dt>
+            <dd>{{ publication.publisher }}</dd>
+        {% endif %}
+
+        {% if publication.year %}
+            <dt>Год издания</dt>
+            <dd>{{ publication.year }}</dd>
+        {% endif %}
+
+        {% if publication.pages %}
+            <dt>Объём</dt>
+            <dd>{{ publication.pages }}</dd>
+        {% endif %}
+
+        {% if publication.isbn %}
+            <dt>ISBN</dt>
+            <dd>{{ publication.isbn }}</dd>
+        {% endif %}
+
+        {% if publication.department_id %}
+            <dt>Подразделение</dt>
+            <dd>
+                <a href="{{ url_for('main.department', department_id=publication.department_id) }}">
+                    {{ publication.department_id }}
+                </a>
+            </dd>
+        {% endif %}
+
+    </dl>
+
+    {% if publication.fulltext_url %}
+        <div class="fulltext-link">
+            <a href="{{ publication.fulltext_url }}" target="_blank" rel="noopener">Читать полный текст</a>
+        </div>
+    {% endif %}
+
+</article>
+
+{% endblock %}

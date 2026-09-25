@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Поиск — Труды учёных{% endblock %}
+{% block content %}
+
+<nav class="breadcrumbs">
+    <a href="{{ url_for('main.index') }}">Главная</a>
+    <span class="sep">›</span>
+    <span class="current">Поиск</span>
+</nav>
+
+<section class="search-section">
+    <form action="{{ url_for('main.search') }}" method="get" class="search-form">
+        <select name="attr" class="search-attr">
+            <option value="author" {% if attr == 'author' %}selected{% endif %}>Автор</option>
+            <option value="title" {% if attr == 'title' %}selected{% endif %}>Заглавие</option>
+            <option value="department" {% if attr == 'department' %}selected{% endif %}>Подразделение</option>
+        </select>
+        <input type="text" name="q" class="search-input" value="{{ query }}" placeholder="Введите запрос" required>
+        <button type="submit" class="search-button">Искать</button>
+    </form>
+</section>
+
+{% if query %}
+    <h1 class="page-title">Результаты поиска ({{ total }})</h1>
+
+    {% if results %}
+        <ul class="publication-list">
+            {% for pub in results %}
+                <li class="publication-item">
+                    <a href="{{ url_for('main.publication', publication_id=pub.id) }}" class="publication-title">
+                        {{ pub.title }}{% if pub.subtitle %}: {{ pub.subtitle }}{% endif %}
+                    </a>
+                    <div class="publication-meta">
+                        {% if pub.authors %}
+                            {% for a in pub.authors %}
+                                <span>{{ a.name }}</span>{% if not loop.last %}, {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                        {% if pub.year %}<span class="meta-year">{{ pub.year }}</span>{% endif %}
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="empty-note">По запросу «{{ query }}» ничего не найдено.</p>
+    {% endif %}
+{% endif %}
+
+{% endblock %}

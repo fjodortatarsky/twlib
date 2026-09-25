@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Указатель авторов — {{ prefix }}{% endblock %}
+{% block content %}
+
+<nav class="breadcrumbs">
+    <a href="{{ url_for('main.index') }}">Главная</a>
+    <span class="sep">›</span>
+    <span>Указатель авторов</span>
+    <span class="sep">›</span>
+    <span class="current">{{ prefix }}</span>
+</nav>
+
+{% if level == 'letter' %}
+    <h1 class="page-title">Префиксы на букву «{{ prefix }}»</h1>
+    <ul class="prefix-list">
+        {% for item in prefixes %}
+            <li class="prefix-item">
+                <a href="{{ url_for('main.author_index', prefix=item.prefix) }}">
+                    {{ item.prefix }}
+                </a>
+                <span class="prefix-count">{{ item.count }}</span>
+            </li>
+        {% else %}
+            <li class="empty-note">Префиксы не найдены.</li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <h1 class="page-title">Авторы с префиксом «{{ prefix }}»</h1>
+    <ul class="author-list">
+        {% for author in authors %}
+            <li class="author-item">
+                <a href="{{ url_for('main.author', authority_id=author.id) }}" class="author-link">
+                    <span class="author-name">{{ author.main_name_full or author.main_name }}</span>
+                    {% if author.birth_year %}
+                        <span class="author-years">({{ author.birth_year }}–{{ author.death_year or '' }})</span>
+                    {% endif %}
+                </a>
+            </li>
+        {% else %}
+            <li class="empty-note">Авторы не найдены.</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% endblock %}

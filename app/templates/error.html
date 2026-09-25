@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Ошибка — Труды учёных{% endblock %}
+{% block content %}
+
+<nav class="breadcrumbs">
+    <a href="{{ url_for('main.index') }}">Главная</a>
+    <span class="sep">›</span>
+    <span class="current">Ошибка</span>
+</nav>
+
+<div class="error-block">{{ message }}</div>
+
+{% endblock %}

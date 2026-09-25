@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Труды учёных{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="page-wrapper">
+
+        <header class="site-header">
+            <div class="header-inner">
+                <a href="{{ url_for('main.index') }}" class="site-title">Труды учёных</a>
+                <span class="site-subtitle">Справочник библиографии</span>
+            </div>
+            <div class="header-ornament">❦</div>
+        </header>
+
+        <main class="site-main">
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="site-footer">
+            <div class="footer-ornament">❦</div>
+            <span>Справочник «Труды учёных»</span>
+        </footer>
+
+    </div>
+</body>
+</html>

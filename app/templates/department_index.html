@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Указатель подразделений — {{ prefix }}{% endblock %}
+{% block content %}
+
+<nav class="breadcrumbs">
+    <a href="{{ url_for('main.index') }}">Главная</a>
+    <span class="sep">›</span>
+    <span>Указатель подразделений</span>
+    <span class="sep">›</span>
+    <span class="current">{{ prefix }}</span>
+</nav>
+
+{% if level == 'letter' %}
+    <h1 class="page-title">Префиксы на букву «{{ prefix }}»</h1>
+    <ul class="prefix-list">
+        {% for item in prefixes %}
+            <li class="prefix-item">
+                <a href="{{ url_for('main.department_index', prefix=item.prefix) }}">
+                    {{ item.prefix }}
+                </a>
+                <span class="prefix-count">{{ item.count }}</span>
+            </li>
+        {% else %}
+            <li class="empty-note">Префиксы не найдены.</li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <h1 class="page-title">Подразделения с префиксом «{{ prefix }}»</h1>
+    <ul class="department-list">
+        {% for dep in departments %}
+            <li class="department-item">
+                <a href="{{ url_for('main.department', department_id=dep.id) }}">
+                    {{ dep.name }}
+                </a>
+            </li>
+        {% else %}
+            <li class="empty-note">Подразделения не найдены.</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% endblock %}

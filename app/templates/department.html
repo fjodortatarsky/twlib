@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}{{ department.name if department else 'Ошибка' }} — Труды учёных{% endblock %}
+{% block content %}
+
+<nav class="breadcrumbs">
+    <a href="{{ url_for('main.index') }}">Главная</a>
+    <span class="sep">›</span>
+    <span class="current">{{ department.name if department else 'Подразделение' }}</span>
+</nav>
+
+{% if error %}
+    <div class="error-block">{{ error }}</div>
+{% else %}
+
+    <section class="department-header">
+        <h1 class="department-name">{{ department.name }}</h1>
+
+        {% if department.description %}
+            <p class="department-description">{{ department.description }}</p>
+        {% endif %}
+
+        {% if department.alternative_names %}
+            <div class="alternative-names">
+                <h3 class="alt-title">Прежние названия</h3>
+                <ul>
+                    {% for name, dates in department.alternative_names %}
+                        <li>
+                            {{ name }}
+                            {% if dates %}<span class="alt-note">({{ dates }})</span>{% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    </section>
+
+    <section class="publications-section">
+        <h2 class="section-title">Публикации подразделения</h2>
+        <ul class="publication-list">
+            {% for pub in publications %}
+                <li class="publication-item">
+                    <a href="{{ url_for('main.publication', publication_id=pub.id) }}" class="publication-title">
+                        {{ pub.title }}{% if pub.subtitle %}: {{ pub.subtitle }}{% endif %}
+                    </a>
+                    <div class="publication-meta">
+                        {% if pub.authors %}
+                            {% for a in pub.authors %}
+                                <span>{{ a.name }}</span>{% if not loop.last %}, {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                        {% if pub.year %}<span class="meta-year">{{ pub.year }}</span>{% endif %}
+                    </div>
+                </li>
+            {% else %}
+                <li class="empty-note">Публикации не найдены.</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+{% endif %}
+
+{% endblock %}
