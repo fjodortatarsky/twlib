@@ -100,9 +100,13 @@ def get_author_prefixes_for_letter(letter: str) -> list[dict] | None:
     """Трёхбуквенные префиксы фамилий авторов, начинающихся на ``letter``.
 
     Использует ``scan`` по точке доступа ``cuba.Author3idx``.
+    Результат адаптируется под формат, ожидаемый шаблоном: ключ ``prefix``.
     """
     scan_clause = f'cuba.Author3idx={letter}'
-    return author_authority.scan(scan_clause, maximum_terms=100)
+    terms = author_authority.scan(scan_clause, maximum_terms=100)
+    if terms is None:
+        return None
+    return [{'prefix': t['value'], 'count': t['count']} for t in terms]
 
 
 def get_authors_by_prefix(prefix: str) -> list | None:
@@ -193,8 +197,10 @@ def get_department_prefixes_for_letter(letter: str) -> list[dict] | None:
     ``cuba.Department3idx``.
     """
     scan_clause = f'cuba.Department3idx={letter}'
-    return department_authority.scan(scan_clause, maximum_terms=100)
-
+    terms = department_authority.scan(scan_clause, maximum_terms=100)
+    if terms is None:
+        return None
+    return [{'prefix': t['value'], 'count': t['count']} for t in terms]
 
 def get_departments_by_prefix(prefix: str) -> list | None:
     """Список подразделений, чьё название начинается с префикса."""
