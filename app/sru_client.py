@@ -101,13 +101,22 @@ def get_author_prefixes_for_letter(letter: str) -> list[dict] | None:
 
     Использует ``scan`` по точке доступа ``cuba.Author3idx``.
     Результат адаптируется под формат, ожидаемый шаблоном: ключ ``prefix``.
+    
+    Фильтрует только термины, начинающиеся с указанной буквы,
+    потому что SRU scan возвращает все термины после точки старта.
     """
     scan_clause = f'cuba.Author3idx={letter}'
-    terms = author_authority.scan(scan_clause, maximum_terms=300)
+    terms = author_authority.scan(scan_clause, maximum_terms=100)
     if terms is None:
         return None
-    return [{'prefix': t['value'], 'count': t['count']} for t in terms]
-
+    # Фильтруем: оставляем только префиксы, начинающиеся на запрошенную букву
+    letter_lower = letter.lower()
+    filtered = [
+        {'prefix': t['value'], 'count': t['count']}
+        for t in terms
+        if t['value'].lower().startswith(letter_lower)
+    ]
+    return filtered
 
 def get_authors_by_prefix(prefix: str) -> list | None:
     """Список авторов, чья фамилия начинается с трёхбуквенного префикса."""
@@ -195,12 +204,21 @@ def get_department_prefixes_for_letter(letter: str) -> list[dict] | None:
 
     Точка доступа для подразделений пока не определена; предполагается
     ``cuba.Department3idx``.
+    
+    Фильтрует только термины, начинающиеся с указанной буквы.
     """
     scan_clause = f'cuba.Department3idx={letter}'
     terms = department_authority.scan(scan_clause, maximum_terms=100)
     if terms is None:
         return None
-    return [{'prefix': t['value'], 'count': t['count']} for t in terms]
+    # Фильтруем: оставляем только префиксы, начинающиеся на запрошенную букву
+    letter_lower = letter.lower()
+    filtered = [
+        {'prefix': t['value'], 'count': t['count']}
+        for t in terms
+        if t['value'].lower().startswith(letter_lower)
+    ]
+    return filtered
 
 def get_departments_by_prefix(prefix: str) -> list | None:
     """Список подразделений, чьё название начинается с префикса."""
