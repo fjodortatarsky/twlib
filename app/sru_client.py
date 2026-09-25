@@ -51,7 +51,7 @@ class SRUClient:
         try:
             resp = requests.get(self.base_url, params=params, timeout=self.timeout)
             resp.raise_for_status()
-            return parsers.parse_search_retrieve(resp.text)
+            return parsers.parse_search_retrieve(resp.content)
         except Exception as e:
             logger.warning('SRU searchRetrieve failed for %s: %s', self.base_url, e)
             return None
@@ -70,7 +70,7 @@ class SRUClient:
         try:
             resp = requests.get(self.base_url, params=params, timeout=self.timeout)
             resp.raise_for_status()
-            return parsers.parse_scan(resp.text)
+            return parsers.parse_scan(resp.content)
         except Exception as e:
             logger.warning('SRU scan failed for %s: %s', self.base_url, e)
             return None
@@ -103,7 +103,7 @@ def get_author_prefixes_for_letter(letter: str) -> list[dict] | None:
     Результат адаптируется под формат, ожидаемый шаблоном: ключ ``prefix``.
     """
     scan_clause = f'cuba.Author3idx={letter}'
-    terms = author_authority.scan(scan_clause, maximum_terms=100)
+    terms = author_authority.scan(scan_clause, maximum_terms=300)
     if terms is None:
         return None
     return [{'prefix': t['value'], 'count': t['count']} for t in terms]
@@ -125,7 +125,7 @@ def get_authors_by_prefix(prefix: str) -> list | None:
 
 def get_author(authority_id: str):
     """Возвращает автора по ``id`` (поле 001 авторитетной записи)."""
-    query = f'rec.id="{authority_id}"'
+    query = f'rec.id={authority_id}'
     result = author_authority.search_retrieve(query, maximum_records=1)
     if result is None:
         return None

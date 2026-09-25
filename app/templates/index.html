@@ -29,16 +29,12 @@
 
     <section class="index-column">
         <h2 class="index-title">Авторы</h2>
-        <div class="letter-grid">
-            {% for item in author_letters %}
-                {% if item.has_authors %}
-                    <a href="{{ url_for('main.author_index', prefix=item.letter) }}"
-                       class="letter-link">{{ item.letter }}</a>
-                {% else %}
-                    <span class="letter-link letter-empty">{{ item.letter }}</span>
-                {% endif %}
-            {% endfor %}
-        </div>
+          <div class="letter-grid">
+              {% for item in author_letters %}
+                  <a href="{{ url_for('main.author_index', prefix=item.letter) }}"
+                     class="letter-link">{{ item.letter }}</a>
+              {% endfor %}
+          </div>
     </section>
 
     <section class="index-column">

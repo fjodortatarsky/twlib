@@ -21,23 +21,13 @@ bp = Blueprint("main", __name__)
 @bp.route("/")
 def index():
     """Главная: окно поиска, приветствие и два указателя (авторы, подразделения)."""
+    # Теперь просто отдаём список букв без проверки наличия данных.
+    # Проверка делала 118 HTTP-запросов на каждый показ главной страницы.
     letters = stubs.get_author_index_letters()
-    author_letters = []
-    for letter in letters:
-        prefixes = stubs.get_author_prefixes_for_letter(letter)
-        author_letters.append({
-            "letter": letter,
-            "has_authors": bool(prefixes),
-        })
+    author_letters = [{"letter": letter} for letter in letters]
 
     dep_letters = stubs.get_department_index_letters()
-    department_letters = []
-    for letter in dep_letters:
-        prefixes = stubs.get_department_prefixes_for_letter(letter)
-        department_letters.append({
-            "letter": letter,
-            "has_depts": bool(prefixes),
-        })
+    department_letters = [{"letter": letter} for letter in dep_letters]
 
     return render_template(
         "index.html",
@@ -45,7 +35,6 @@ def index():
         department_letters=department_letters,
         show_welcome=True,
     )
-
 
 # ---------------------------------------------------------------------------
 # Поиск
