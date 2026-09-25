@@ -103,7 +103,7 @@ def author(authority_id):
         return render_template("error.html", message="Автор не найден"), 404
 
     # Публикации автора — по первому коду 035 из авторитетной записи
-    publications = stubs.get_publications_by_author_code(author_obj.code_035)
+    publications = stubs.get_publications_by_author_code(authority_id) #author_obj.code_035)
     # Публикации об авторе
     about = stubs.get_publications_about_author(author_obj.id)
 

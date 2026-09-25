@@ -519,7 +519,7 @@ a.letter-link:hover {
 }
 
 .publication-title {
-    font-size: 1.6rem;
+    font-size: 1rem;
     margin: 0 0 1.2rem;
     color: var(--wood-dark);
 }

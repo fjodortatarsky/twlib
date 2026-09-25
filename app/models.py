@@ -13,15 +13,19 @@ class Author:
     main_name_full: str
     birth_year: int | None = None
     death_year: int | None = None
-    description: str | None = None
+    description: str | None = None          # биография из 830
+    titles: list = field(default_factory=list)  # регалии из 200$c
     orcid: str | None = None
     photo_url: str | None = None
     alternative_names: list = field(default_factory=list)
+    codes_001: list = field(default_factory=list)
     codes_035: list = field(default_factory=list)
 
     @property
+    def code_001(self):
+        return self.codes_001[0] if self.codes_001 else None
+    @property
     def code_035(self):
-        """Первый код 035 — по нему ищем публикации автора в библио-БД."""
         return self.codes_035[0] if self.codes_035 else None
 
 

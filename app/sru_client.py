@@ -93,7 +93,7 @@ def get_author_index_letters() -> list[str]:
     """
     latin = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
     cyrillic = list('АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ')
-    return latin + cyrillic
+    return  cyrillic + latin
 
 
 def get_author_prefixes_for_letter(letter: str) -> list[dict] | None:
@@ -144,12 +144,12 @@ def get_author(authority_id: str):
     return parsers.parse_author_record(records[0])
 
 
-def get_publications_by_author_code(code_035: str) -> list:
+def get_publications_by_author_code(code_001: str) -> list:
     """Публикации автора по первому коду 035 из авторитетной записи.
 
     Ищет в библиографической базе по точке доступа ``cuba.AuthorityAuthorCode``.
     """
-    query = f'cuba.AuthorityAuthorCode="{code_035}"'
+    query = f'cuba.AuthorityAuthorCode="{code_001}"'
     result = bibliographic.search_retrieve(query, maximum_records=DEFAULT_MAX_RECORDS)
     if result is None:
         return []

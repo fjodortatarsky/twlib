@@ -29,8 +29,16 @@
             </p>
         {% endif %}
 
+        {% if author.titles %}
+            <ul class="author-titles">
+                {% for title in author.titles %}
+                    <li>{{ title }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
         {% if author.description %}
-            <p class="author-description">{{ author.description }}</p>
+            <p class="author-bio">{{ author.description }}</p>
         {% endif %}
 
         {% if author.orcid %}
@@ -40,17 +48,23 @@
         {% endif %}
 
         {% if author.alternative_names %}
-            <div class="alternative-names">
-                <h3 class="alt-title">Другие формы имени</h3>
-                <ul>
-                    {% for alt in author.alternative_names %}
-                        <li>
-                            {{ alt.full or alt.name }}
-                            {% if alt.note %}<span class="alt-note">({{ alt.note }})</span>{% endif %}
-                        </li>
-                    {% endfor %}
-                </ul>
-            </div>
+           <div class="alternative-names">
+               <h3 class="alt-title">Другие формы имени</h3>
+               <ul>
+                   {% for alt in author.alternative_names %}
+                       <li>
+                           {% if alt.id %}
+                               <a href="{{ url_for('main.author', authority_id=alt.id) }}">
+                                   {{ alt.full or alt.name }}
+                               </a>
+                           {% else %}
+                               {{ alt.full or alt.name }}
+                           {% endif %}
+                           {% if alt.note %}<span class="alt-note">({{ alt.note }})</span>{% endif %}
+                       </li>
+                   {% endfor %}
+               </ul>
+           </div>
         {% endif %}
     </div>
 

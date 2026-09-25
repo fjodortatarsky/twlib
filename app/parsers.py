@@ -64,9 +64,10 @@ def _parse_name_from_field(df):
     g = _get_first_subfield(df, 'g')   # полное имя
     f = _get_first_subfield(df, 'f')   # годы жизни
     name = ' '.join(filter(None, [a, b]))
+    full = ' '.join(filter(None, [a, g]))
     return {
         'name': name,
-        'full': g or name,
+        'full': full,
         'years': f,
     }
 
@@ -154,32 +155,45 @@ def parse_author_record(record) -> Author:
         if a:
             codes_035.append(a)
 
-    # Основная форма имени
+    # --- Основная форма имени: из поля 200 ---
     main_name = ''
     main_name_full = ''
     birth_year = None
     death_year = None
 
-    df_700 = _find_datafields(record, '700')
-    df_200 = _find_datafields(record, '200')
-
-    main_field = df_700[0] if df_700 else (df_200[0] if df_200 else None)
-    if main_field is not None:
-        parsed = _parse_name_from_field(main_field)
+    df_200_list = _find_datafields(record, '200')
+    if df_200_list:
+        parsed = _parse_name_from_field(df_200_list[0])
         main_name = parsed['name']
         main_name_full = parsed['full']
         birth_year, death_year = _parse_years_range(parsed['years'])
 
-    # Альтернативные имена (параллельные формы из 500)
+    # --- Альтернативные имена: из полей 500 ---
+    # --- Альтернативные имена: из полей 500 ---
     alternative_names = []
     for df in _find_datafields(record, '500'):
         parsed = _parse_name_from_field(df)
+        # Пропускаем, если форма совпадает с основной
+        if parsed['name'] == main_name or parsed['full'] == main_name_full:
+            continue
+        alt_id = _get_first_subfield(df, '3')  # ← ID связанной авторитетной записи
         alternative_names.append({
             'name': parsed['name'],
             'full': parsed['full'],
-            'note': 'параллельная форма имени',
+            'note': 'связанная форма имени',
+            'id': alt_id,  # ← None, если $3 отсутствует
         })
 
+    # --- Регалии: повторяющиеся подполя 200$c ---
+    titles = []
+    for df in df_200_list:  # df_200_list уже собран выше
+        titles.extend(_get_all_subfields(df, 'c'))
+
+    # --- Биографическая информация: 830$a ---
+    description = None
+    df_830_list = _find_datafields(record, '830')
+    if df_830_list:
+        description = _get_first_subfield(df_830_list[0], 'a')
     # Фото / профиль: 856$u
     photo_url = None
     for df in _find_datafields(record, '856'):
@@ -203,13 +217,13 @@ def parse_author_record(record) -> Author:
         main_name_full=main_name_full,
         birth_year=birth_year,
         death_year=death_year,
-        description=None,
+        description=description,      # ← из 830
+        titles=titles,                # ← из 200$c
         orcid=orcid,
         photo_url=photo_url,
         alternative_names=alternative_names,
         codes_035=codes_035,
     )
-
 
 # ---------------------------------------------------------------------------
 # Парсинг библиографической записи
