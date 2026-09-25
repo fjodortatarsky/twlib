@@ -166,7 +166,7 @@ def get_publications_about_author(author_id: str) -> list:
     author = get_author(author_id)
     if not author or not author.code_035:
         return []
-    query = f'cuba.AboutAuthorCode="{author.code_035}"'
+    query = f'cuba.authorityAboutCode="{author_id}"'
     result = bibliographic.search_retrieve(query, maximum_records=100)
     if result is None:
         return []
