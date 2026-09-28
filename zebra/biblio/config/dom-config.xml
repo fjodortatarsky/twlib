@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dom>
+  <extract name="index">
+    <xslt stylesheet="MARC21slimBIB2INDEX.xsl"/>
+  </extract>
+  <retrieve name="marc">
+    <xslt stylesheet="identity.xsl" />
+  </retrieve>
+  <retrieve name="bib">
+    <xslt stylesheet="xml2json.xsl" />
+  </retrieve>
+
+  <retrieve name="zebra">
+    <xslt stylesheet="zebra.xsl"/>
+  </retrieve>
+  <input syntax="xml">
+    <xmlreader level="1"/>
+  </input>
+</dom>

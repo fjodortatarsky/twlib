@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dom>
+  <extract name="index">
+    <xslt stylesheet="MARC21slimPERSON2INDEX.xsl"/>
+  </extract>
+  <retrieve name="marc">
+    <xslt stylesheet="identity.xsl" />
+  </retrieve>
+  <retrieve name="bib">
+    <xslt stylesheet="xml2json.xsl" />
+  </retrieve>
+
+  <!--retrieve name="dc">
+   <xslt stylesheet="MARC21slim2SRWDC.xsl"/>
+  </retrieve>
+  <retrieve name="index">
+    <xslt stylesheet="MARC21slim2INDEX.xsl"/>
+  </retrieve>
+  <retrieve name="mads">
+    <xslt  stylesheet="MARC21slim2MADS.xsl"/>
+  </retrieve>
+  <retrieve name="mods">
+    <xslt stylesheet="MARC21slim2MODS3-1.xsl"/>
+  </retrieve>-->
+  <retrieve name="zebra">
+    <xslt stylesheet="zebra.xsl"/>
+  </retrieve>
+  <input syntax="xml">
+    <xmlreader level="1"/>
+  </input>
+</dom>

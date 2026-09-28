@@ -1,0 +1,110 @@
+
+# Propeties file to drive org.z3950.zing.cql.CQLNode's toPQF()
+# back-end and the YAZ CQL-to-PQF converter.  This specifies the
+# interpretation of various CQL indexes, relations, etc. in terms
+# of Type-1 query attributes.
+#
+# This file is created from a valid ZeeRex Explain XML record using the 
+# XSLT transformation 'explain2cqlpqftxt.xsl'
+#
+# xsltproc explain2cqlpqf.xsl explain.xml
+    
+
+# Title: OAI record SRU/SRW/Z39.50 server
+
+# Set info
+# Default set
+set = info:srw/cql-context-set/1/cql-v1.1
+
+set.cql  = info:srw/cql-context-set/1/cql-v1.1
+set.rec  = info:srw/cql-context-set/2/rec-1.0
+set.oai  = info:srw/cql-context-set/1/oai-v1.1
+set.dc   = info:srw/cql-context-set/1/dc-v1.1
+set.bath = info:srw/cql-context-set/1/bath-fake
+
+set.cuba = info:srw/cql-context-set/1/cuba-fake
+
+# Index info
+index.cql.serverChoice = 1=any 
+index.cql.all = 1=any 
+
+index.cuba.idLichnosti = 1=Lichnost-id
+index.cuba.LocalId = 1=Local-number
+index.rec.id = 1=Local-number
+index.cuba.authorityAuthorCode = 1=Authority-author-code
+index.cuba.authorityAboutCode  = 1=Authority-about-code
+index.cql.sortByDateDescending = 7=2 1=31 2
+
+index.dc.creator           = 1=1003 4=6 # Author
+index.dc.title             = 1=4    # Title
+index.dc.identifier.isbn   = 1=7    # ISBN
+index.dc.description       = 1=1036 # Author-Title-Subject
+
+index.dc.subject           = 1=21   # Subject-heading
+index.dc.date              = 1=31   # Subject-heading
+
+
+index.bath.isbn            = 1=1007 # Identifier-standard
+index.bath.issn            = 1=8    # ISSN
+
+index.cuba.classificationUDC  = 1=29   # Local-subject-index
+
+index.dc.publisher            = 1=1018
+
+# subjects -> 600-610, 615,616
+# ISBN -> 010
+# ISSN -> 011
+# UDC  -> 675
+# BBK  -> 686$2 /bbk/
+# publisher -> 210$c
+
+# Relation info
+relation.<  = 2=1
+relation.eq  = 2=3
+relation.>  = 2=5
+
+relation.all = 4=6
+relation.any = 4=105
+
+# Default Relation
+relation.scr = 2=3
+
+# RelationModifier info
+relationModifier.relevant = 2=102 
+relationModifier.phrase = 6=3 
+
+
+# Position attributes 
+position.first                          = 3=1 6=1
+position.any                            = 3=3 6=1
+position.last                           = 3=4 6=1
+position.firstAndLast                   = 3=3 6=3
+
+# Structure attributes may be specified for individual relations; a
+# default structure attribute my be specified by the pseudo-relation
+# "*", to be used whenever a relation not listed here occurs.
+#
+structure.exact                         = 4=108
+structure.all                           = 4=2
+structure.any                           = 4=2
+structure.*                             = 4=1
+structure.eq                            = 4=3
+
+# Truncation attributes used to implement CQL wildcard patterns.  The
+# simpler forms, left, right- and both-truncation will be used for the
+# simplest patterns, so that we produce PQF queries that conform more
+# closely to the Bath Profile.  However, when a more complex pattern
+# such as "foo*bar" is used, we fall back on Z39.58-style masking.
+#
+truncation.right                        = 5=1
+truncation.left                         = 5=2
+truncation.both                         = 5=3
+truncation.none                         = 5=100
+truncation.z3958                        = 5=104
+
+# Finally, any additional attributes that should always be included
+# with each term can be specified in the "always" property.
+#
+# always                                        = 6=1
+# 6=1: completeness = incomplete subfield
+

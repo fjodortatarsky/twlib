@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<yazgfs>
+  <listen id="tcplistener">tcp:@:9991</listen>
+  <server id="main" listenref="tcplistener">
+    <retrievalinfo>
+      <retrieval syntax="usmarc" name="F">
+        <backend syntax="xml" name="marc">
+          <marc inputformat="xml" outputformat="marc" outputcharset="marc-8"/>
+        </backend>
+      </retrieval>
+      <retrieval syntax="unimarc" name="F">
+        <backend syntax="xml" name="marc">
+          <marc inputformat="xml" outputformat="marc" outputcharset="utf-8"/>
+        </backend>
+      </retrieval>
+       <retrieval syntax="xml"/>
+    </retrievalinfo>
+    <directory>./</directory>
+    <config>config/zebra.cfg</config>
+    <cql2rpn>config/cql2pqf.txt</cql2rpn>
+  </server>
+</yazgfs>
