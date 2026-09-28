@@ -177,6 +177,8 @@ def parse_author_record(record) -> Author:
         if parsed['name'] == main_name or parsed['full'] == main_name_full:
             continue
         alt_id = _get_first_subfield(df, '3')  # ← ID связанной авторитетной записи
+        if alt_id:
+          alt_id = alt_id.replace('(', '').replace(')', '').replace(chr(92), '')
         alternative_names.append({
             'name': parsed['name'],
             'full': parsed['full'],
@@ -250,6 +252,8 @@ def parse_publication_record(record) -> Publication:
             b = _get_first_subfield(df, 'b')
             name = ' '.join(filter(None, [a, b]))
             authority_id = _get_first_subfield(df, '3')
+            if authority_id:
+              authority_id = authority_id.replace('(', '').replace(')', '').replace(chr(92), '')
             authors.append(AuthorRef(name=name, authority_id=authority_id))
 
     # Издательские данные: 210
