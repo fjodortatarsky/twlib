@@ -256,7 +256,7 @@ def get_publications_by_department(department_id: str) -> tuple[int, list]:
     (поле 001 авторитетной записи подразделения), и есть точка доступа
     ``cuba.DepartmentCode``.
     """
-    query = f'cuba.DepartmentCode="{department_id}"'
+    query = f'cuba.AuthorityCorpCode={department_id}'
     result = bibliographic.search_retrieve(query, maximum_records=DEFAULT_MAX_RECORDS)
     if result is None:
         return 0, []
@@ -277,16 +277,24 @@ def search_publications(query: str, attr: str) -> tuple[int, list]:
     - ``cql.author`` — автор
     - ``cuba.DepartmentName`` — подразделение (предположение)
     """
+
+#bibliographic = SRUClient(BIBLIOGRAPHIC_URL)
+#author_authority = SRUClient(AUTHOR_AUTHORITY_URL)
+#department_authority = SRUClient(DEPARTMENT_AUTHORITY_URL)
+
     if attr == 'title':
-        cql = f'cql.title="{query}"'
+        cql = f'dc.title="{query}"'
+        target = bibliographic
     elif attr == 'author':
-        cql = f'cql.author="{query}"'
+        cql = f'cuba.AuthorSurname="{query}"'
+        target = author_authority
     elif attr == 'department':
-        cql = f'cuba.DepartmentName="{query}"'
+        cql = f'cuba.CorpAuthor="{query}"'
+        target = department_authority
     else:
         cql = f'cql.anywhere="{query}"'
 
-    result = bibliographic.search_retrieve(cql, maximum_records=100)
+    result = target.search_retrieve(cql, maximum_records=100)
     if result is None:
         return 0, []
     total, records = result

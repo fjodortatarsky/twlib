@@ -51,12 +51,12 @@ def search():
 
     total, results = stubs.search_publications(query, attr)
     return render_template(
-        "search.html",
-        query=query,
-        attr=attr,
-        results=results,
-        total=total,
-    )
+            "search.html",
+            query=query,
+            attr=attr,
+            results=results,
+            total=total,
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -103,9 +103,12 @@ def author(authority_id):
         return render_template("error.html", message="Автор не найден"), 404
 
     # Публикации автора — по первому коду 035 из авторитетной записи
-    publications = stubs.get_publications_by_author_code(authority_id) #author_obj.code_035)
+    publications = stubs.get_publications_by_author_code(author_obj.id) #author_obj.code_035)
+    #publications2 = stubs.get_publications_by_author_code(authority2_id) #author_obj.code_035)
+    #publications = publications + publications2
     # Публикации об авторе
     about = stubs.get_publications_about_author(author_obj.id)
+    about += stubs.get_publications_about_author(author_obj.codes_035[0])
 
     # Сортировка (через GET-параметр, без JS)
     sort = request.args.get("sort", "date")

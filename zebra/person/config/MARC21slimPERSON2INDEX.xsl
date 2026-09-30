@@ -148,11 +148,13 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
   </xsl:template>
 
   <xsl:template name="AuthorSurname">
+    <xsl:if test="marc:datafield[@tag='200']/marc:subfield[@code='x'] = 'TPU'">
       <xsl:for-each select="marc:datafield[@tag='200']/marc:subfield[@code='a']">
-      <z:index name="AuthorSurname:w AuthorSurname:s">
-	      <xsl:value-of select="."/>
-      </z:index>
-    </xsl:for-each>
+        <z:index name="AuthorSurname:w AuthorSurname:s">
+          <xsl:value-of select="."/>
+        </z:index>
+      </xsl:for-each>
+    </xsl:if>
   </xsl:template>
 
   <xsl:template name="CorpAuthor">
@@ -168,6 +170,9 @@ Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
           </z:index>
           <z:index name="CorpAuthor3idx:w CorpAuthor3idx:s">
               <xsl:value-of select="substring(., 1, 3)"/>
+          </z:index>
+          <z:index name="CorpAuthor:w CorpAuthor:s">
+              <xsl:value-of select="."/>
           </z:index>
         </xsl:for-each>
       </xsl:if>

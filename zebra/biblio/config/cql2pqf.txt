@@ -33,6 +33,8 @@ index.cuba.LocalId = 1=Local-number
 index.rec.id = 1=Local-number
 index.cuba.authorityAuthorCode = 1=Authority-author-code
 index.cuba.authorityAboutCode  = 1=Authority-about-code
+index.cuba.authorityCorpCode  = 1=Authority-corp-code
+index.cuba.authorityCorpName  = 1=Authority-corp-name
 index.cql.sortByDateDescending = 7=2 1=31 2
 
 index.dc.creator           = 1=1003 4=6 # Author

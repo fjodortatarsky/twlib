@@ -79,6 +79,8 @@
        <xsl:call-template name="Publisher"/>
        <xsl:call-template name="AuthorityAboutCode"/>
        <xsl:call-template name="AuthorityAuthorCode"/>
+       <xsl:call-template name="AuthorityCorpCode"/>
+       <xsl:call-template name="AuthorityCorpName"/>
        <xsl:call-template name="DateOfPublication"/>
        <xsl:call-template name="any"/>
    </xsl:template>
@@ -99,14 +101,12 @@
    </xsl:template>
 
    <xsl:template name="Title">
-    <xsl:for-each select="marc:datafield[@tag='200']">
-     <z:index name="Title:w Title:s">
-       <xsl:value-of select="marc:subfield[@code='a']"/>
-       <xsl:text> </xsl:text>
-       <xsl:value-of select="marc:subfield[@code='b']"/>
-       <xsl:text> </xsl:text>
-       <xsl:value-of select="marc:subfield[@code='e']"/>
-     </z:index>
+     <xsl:for-each select="marc:datafield[@tag='200']/marc:subfield[@code='a'] |
+                           marc:datafield[@tag='461']/marc:subfield[@code='t'] |
+                           marc:datafield[@tag='462']/marc:subfield[@code='t']">
+       <z:index name="Title:w Title:s">
+         <xsl:value-of select="."/>
+       </z:index>
      </xsl:for-each>
    </xsl:template>
 
@@ -182,6 +182,23 @@
                           marc:datafield[@tag='701']/marc:subfield[@code='9'] |
                           marc:datafield[@tag='702']/marc:subfield[@code='9']">
       <z:index name="Authority-author-code:w Authority-author-code:s">
+	      <xsl:value-of select="."/>
+      </z:index>
+    </xsl:for-each>
+  </xsl:template>
+
+  <xsl:template name="AuthorityCorpCode">
+    <xsl:for-each select="marc:datafield[@tag='712']/marc:subfield[@code='9']">
+      <z:index name="Authority-corp-code:w Authority-corp-code:s">
+	      <xsl:value-of select="."/>
+      </z:index>
+    </xsl:for-each>
+  </xsl:template>
+
+  <xsl:template name="AuthorityCorpName">
+    <xsl:for-each select="marc:datafield[@tag='712']/marc:subfield[@code='a'] |
+                         marc:datafield[@tag='712']/marc:subfield[@code='b']">
+      <z:index name="Authority-corp-name:w Authority-corp-name:s">
 	      <xsl:value-of select="."/>
       </z:index>
     </xsl:for-each>

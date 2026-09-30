@@ -176,9 +176,14 @@ def parse_author_record(record) -> Author:
         # Пропускаем, если форма совпадает с основной
         if parsed['name'] == main_name or parsed['full'] == main_name_full:
             continue
-        alt_id = _get_first_subfield(df, '3')  # ← ID связанной авторитетной записи
-        if alt_id:
+
+
+        alt_id = _get_first_subfield(df, '9')  # ← ID связанной авторитетной записи
+        if not alt_id:
+            alt_id = _get_first_subfield(df, '3')
+        if(alt_id):
           alt_id = alt_id.replace('(', '').replace(')', '').replace(chr(92), '')
+
         alternative_names.append({
             'name': parsed['name'],
             'full': parsed['full'],
@@ -193,9 +198,9 @@ def parse_author_record(record) -> Author:
 
     # --- Биографическая информация: 830$a ---
     description = None
-    df_830_list = _find_datafields(record, '830')
-    if df_830_list:
-        description = _get_first_subfield(df_830_list[0], 'a')
+    df_340_list = _find_datafields(record, '340')
+    if df_340_list:
+        description = _get_first_subfield(df_340_list[0], 'a')
     # Фото / профиль: 856$u
     photo_url = None
     for df in _find_datafields(record, '856'):

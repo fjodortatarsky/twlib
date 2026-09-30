@@ -26,19 +26,36 @@
     {% if results %}
         <ul class="publication-list">
             {% for pub in results %}
-                <li class="publication-item">
-                    <a href="{{ url_for('main.publication', publication_id=pub.id) }}" class="publication-title">
-                        {{ pub.title }}{% if pub.subtitle %}: {{ pub.subtitle }}{% endif %}
-                    </a>
-                    <div class="publication-meta">
-                        {% if pub.authors %}
-                            {% for a in pub.authors %}
-                                <span>{{ a.name }}</span>{% if not loop.last %}, {% endif %}
-                            {% endfor %}
-                        {% endif %}
-                        {% if pub.year %}<span class="meta-year">{{ pub.year }}</span>{% endif %}
-                    </div>
-                </li>
+                {% if attr == "title" %}
+                  <li class="publication-item">
+                      <a href="{{ url_for('main.publication', publication_id=pub.id) }}" class="publication-title">
+                          {{ pub.title }}{% if pub.subtitle %}: {{ pub.subtitle }}{% endif %}
+                      </a>
+                      <div class="publication-meta">
+                          {% if pub.authors %}
+                              {% for a in pub.authors %}
+                                  <span>{{ a.name }}</span>{% if not loop.last %}, {% endif %}
+                              {% endfor %}
+                          {% endif %}
+                          {% if pub.year %}<span class="meta-year">{{ pub.year }}</span>{% endif %}
+                      </div>
+                  </li>
+                {% endif %}
+                {% if attr == "author" %}
+                  <li class="publication-item">
+                      <a href="{{ url_for('main.author', authority_id=pub.id) }}" class="publication-title">
+                          {{ pub.title }}{% if pub.subtitle %}: {{ pub.subtitle }}{% endif %}
+                      </a>
+                      <div class="publication-meta">
+                          {% if pub.authors %}
+                              {% for a in pub.authors %}
+                                  <span>{{ a.name }}</span>{% if not loop.last %}, {% endif %}
+                              {% endfor %}
+                          {% endif %}
+                          {% if pub.year %}<span class="meta-year">{{ pub.year }}</span>{% endif %}
+                      </div>
+                  </li>
+                {% endif %}
             {% endfor %}
         </ul>
     {% else %}

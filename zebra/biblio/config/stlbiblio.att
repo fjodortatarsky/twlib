@@ -106,4 +106,6 @@ att 1036            Author-Title-Subject
 att 1050            Lichnost-id
 att 1051            Authority-author-code
 att 1052            Authority-about-code
+att 1053            Authority-corp-code
+att 1054            Authority-corp-name
 
