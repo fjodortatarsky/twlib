@@ -1,10 +1,4 @@
-"""Типы данных приложения.
-
-Используются и заглушками (``stubs.py``), и парсерами (``parsers.py``).
-"""
-
 from dataclasses import dataclass, field
-
 
 @dataclass
 class Author:
@@ -13,8 +7,8 @@ class Author:
     main_name_full: str
     birth_year: int | None = None
     death_year: int | None = None
-    description: str | None = None          # биография из 830
-    titles: list = field(default_factory=list)  # регалии из 200$c
+    description: str | None = None
+    titles: list = field(default_factory=list)
     orcid: str | None = None
     photo_url: str | None = None
     alternative_names: list = field(default_factory=list)
@@ -22,8 +16,13 @@ class Author:
     codes_035: list = field(default_factory=list)
 
     @property
+    def entity_type(self) -> str:
+        return "author"
+
+    @property
     def code_001(self):
         return self.codes_001[0] if self.codes_001 else None
+        
     @property
     def code_035(self):
         return self.codes_035[0] if self.codes_035 else None
@@ -31,7 +30,6 @@ class Author:
 
 @dataclass
 class AuthorRef:
-    """Ссылка на автора внутри библиографической записи."""
     name: str
     authority_id: str | None = None
 
@@ -50,10 +48,18 @@ class Publication:
     fulltext_url: str | None = None
     department_id: str | None = None
 
+    @property
+    def entity_type(self) -> str:
+        return "publication"
+
 
 @dataclass
 class Department:
     id: str
     name: str
     description: str | None = None
-    alternative_names: list = field(default_factory=list)  # list[(name, dates)]
+    alternative_names: list = field(default_factory=list)
+
+    @property
+    def entity_type(self) -> str:
+        return "department"

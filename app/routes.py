@@ -49,7 +49,7 @@ def search():
     if not query:
         return render_template("search.html", query="", attr=attr, results=[], total=0)
 
-    total, results = stubs.search_publications(query, attr)
+    total, results = stubs.search_entities(query, attr)
     return render_template(
             "search.html",
             query=query,

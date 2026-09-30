@@ -65,7 +65,9 @@
      </xsl:variable>
 
      <z:record z:id="{$controlField001}" type="{$type}">
-       <xsl:call-template name="bib1_rules"/>
+       <!--xsl:if test="marc:datafield[@tag='610']/marc:subfield[@code='a' and text()='труды ученых ТПУ']"-->
+         <xsl:call-template name="bib1_rules"/>
+       <!--/xsl:if-->
      </z:record>
    </xsl:template>
 

@@ -26,6 +26,7 @@ DEPARTMENT_AUTHORITY_URL = 'http://localhost:9999/'  # предположени�
 
 DEFAULT_TIMEOUT = 10
 DEFAULT_MAX_RECORDS = 500
+DEFAULT_MAX_TERMS = 500
 
 
 class SRUClient:
@@ -56,7 +57,7 @@ class SRUClient:
             logger.warning('SRU searchRetrieve failed for %s: %s', self.base_url, e)
             return None
 
-    def scan(self, scan_clause: str, maximum_terms: int = 100) -> list | None:
+    def scan(self, scan_clause: str, maximum_terms: int = DEFAULT_MAX_TERMS) -> list | None:
         """Выполняет ``operation=scan``.
 
         Возвращает список терминов ``[{'value': ..., 'count': ...}, ...]``
@@ -106,7 +107,7 @@ def get_author_prefixes_for_letter(letter: str) -> list[dict] | None:
     потому что SRU scan возвращает все термины после точки старта.
     """
     scan_clause = f'cuba.Author3idx={letter}'
-    terms = author_authority.scan(scan_clause, maximum_terms=100)
+    terms = author_authority.scan(scan_clause, maximum_terms=DEFAULT_MAX_TERMS)
     if terms is None:
         return None
     # Фильтруем: оставляем только префиксы, начинающиеся на запрошенную букву
@@ -167,7 +168,7 @@ def get_publications_about_author(author_id: str) -> list:
     if not author or not author.code_035:
         return []
     query = f'cuba.authorityAboutCode="{author_id}"'
-    result = bibliographic.search_retrieve(query, maximum_records=100)
+    result = bibliographic.search_retrieve(query, maximum_records=DEFAULT_MAX_RECORDS)
     if result is None:
         return []
     total, records = result
@@ -223,7 +224,7 @@ def get_department_prefixes_for_letter(letter: str) -> list[dict] | None:
 def get_departments_by_prefix(prefix: str) -> list | None:
     """Список подразделений, чьё название начинается с префикса."""
     query = f'cuba.CorpAuthor3idx="{prefix}"'
-    result = department_authority.search_retrieve(query, maximum_records=100)
+    result = department_authority.search_retrieve(query, maximum_records=DEFAULT_MAX_RECORDS)
     if result is None:
         return None
     total, records = result
@@ -294,9 +295,42 @@ def search_publications(query: str, attr: str) -> tuple[int, list]:
     else:
         cql = f'cql.anywhere="{query}"'
 
-    result = target.search_retrieve(cql, maximum_records=100)
+    result = target.search_retrieve(cql, maximum_records=DEFAULT_MAX_RECORDS)
     if result is None:
         return 0, []
     total, records = result
     publications = [parsers.parse_publication_record(r) for r in records]
     return total, publications
+
+# ---------------------------------------------------------------------------
+# Поиск
+# ---------------------------------------------------------------------------
+
+def search_entities(query: str, attr: str) -> tuple[int, list]:
+    """Поиск сущностей с применением корректного парсера для каждого типа."""
+    
+    if attr == 'title':
+        cql = f'dc.title="{query}"'
+        target = bibliographic
+        parser = parsers.parse_publication_record
+    elif attr == 'author':
+        cql = f'cuba.AuthorSurname="{query}"'
+        target = author_authority
+        parser = parsers.parse_author_record
+    elif attr == 'department':
+        cql = f'cuba.CorpAuthor="{query}"'
+        target = department_authority
+        parser = parsers.parse_department_record
+    else:
+        cql = f'cql.anywhere="{query}"'
+        target = bibliographic
+        parser = parsers.parse_publication_record
+
+    result = target.search_retrieve(cql, maximum_records=DEFAULT_MAX_RECORDS)
+    if result is None:
+        return 0, []
+    
+    total, records = result
+    # Применяем нужный парсер к каждой записи
+    entities = [parser(r) for r in records]
+    return total, entities

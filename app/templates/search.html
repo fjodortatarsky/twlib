@@ -24,38 +24,59 @@
     <h1 class="page-title">Результаты поиска ({{ total }})</h1>
 
     {% if results %}
-        <ul class="publication-list">
-            {% for pub in results %}
-                {% if attr == "title" %}
-                  <li class="publication-item">
-                      <a href="{{ url_for('main.publication', publication_id=pub.id) }}" class="publication-title">
-                          {{ pub.title }}{% if pub.subtitle %}: {{ pub.subtitle }}{% endif %}
-                      </a>
-                      <div class="publication-meta">
-                          {% if pub.authors %}
-                              {% for a in pub.authors %}
-                                  <span>{{ a.name }}</span>{% if not loop.last %}, {% endif %}
-                              {% endfor %}
-                          {% endif %}
-                          {% if pub.year %}<span class="meta-year">{{ pub.year }}</span>{% endif %}
-                      </div>
-                  </li>
-                {% endif %}
-                {% if attr == "author" %}
-                  <li class="publication-item">
-                      <a href="{{ url_for('main.author', authority_id=pub.id) }}" class="publication-title">
-                          {{ pub.title }}{% if pub.subtitle %}: {{ pub.subtitle }}{% endif %}
-                      </a>
-                      <div class="publication-meta">
-                          {% if pub.authors %}
-                              {% for a in pub.authors %}
-                                  <span>{{ a.name }}</span>{% if not loop.last %}, {% endif %}
-                              {% endfor %}
-                          {% endif %}
-                          {% if pub.year %}<span class="meta-year">{{ pub.year }}</span>{% endif %}
-                      </div>
-                  </li>
-                {% endif %}
+        <ul class="search-results-list">
+            {% for item in results %}
+                <li class="result-item">
+                    
+                    {# 1. ПУБЛИКАЦИЯ #}
+                    {% if item.entity_type == 'publication' %}
+                        <a href="{{ url_for('main.publication', publication_id=item.id) }}" class="result-title">
+                            {{ item.title }}{% if item.subtitle %}: {{ item.subtitle }}{% endif %}
+                        </a>
+                        <div class="result-meta">
+                            {% if item.authors %}
+                                {% for a in item.authors %}
+                                    <span>{{ a.name }}</span>{% if not loop.last %}, {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                            {% if item.year %}
+                                <span class="meta-year">{{ item.year }}</span>
+                            {% endif %}
+                        </div>
+
+                    {# 2. АВТОР #}
+                    {% elif item.entity_type == 'author' %}
+                        <a href="{{ url_for('main.author', authority_id=item.id) }}" class="result-title">
+                            {{ item.main_name_full or item.main_name }}
+                        </a>
+                        <div class="result-meta">
+                            {% if item.birth_year or item.death_year %}
+                                <span class="meta-years">
+                                    {{ item.birth_year or '?' }} – {{ item.death_year or '?' }}
+                                </span>
+                            {% endif %}
+                            {% if item.titles %}
+                                <span class="meta-titles">{{ item.titles | join(', ') }}</span>
+                            {% endif %}
+                        </div>
+
+                    {# 3. ПОДРАЗДЕЛЕНИЕ #}
+                    {% elif item.entity_type == 'department' %}
+                        <a href="{{ url_for('main.department', department_id=item.id) }}" class="result-title">
+                            {{ item.name }}
+                        </a>
+                        <div class="result-meta">
+                            {% if item.description %}
+                                <span class="meta-desc">{{ item.description }}</span>
+                            {% endif %}
+                        </div>
+
+                    {# ЗАЩИТА ОТ НЕИЗВЕСТНОГО ТИПА #}
+                    {% else %}
+                        <span class="result-title">Неизвестный тип записи (ID: {{ item.id }})</span>
+                    {% endif %}
+                    
+                </li>
             {% endfor %}
         </ul>
     {% else %}
