@@ -31,7 +31,7 @@
         <h2 class="index-title">Авторы</h2>
           <div class="letter-grid">
               {% for item in author_letters %}
-                  <a href="{{ url_for('main.author_index', prefix=item.letter) }}"
+                  <a href="{{ url_for('main.author_index', letter=item.letter) }}"
                      class="letter-link">{{ item.letter }}</a>
               {% endfor %}
           </div>
@@ -41,7 +41,7 @@
         <h2 class="index-title">Подразделения</h2>
         <div class="letter-grid">
             {% for item in department_letters %}
-                 <a href="{{ url_for('main.department_index', prefix=item.letter) }}"
+                 <a href="{{ url_for('main.department_index', letter=item.letter) }}"
                     class="letter-link">{{ item.letter }}</a>
             {% endfor %}
         </div>

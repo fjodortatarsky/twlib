@@ -63,33 +63,19 @@ def search():
 # Указатель авторов (двухуровневый, серверный, без JS)
 # ---------------------------------------------------------------------------
 
-@bp.route("/author-index/<prefix>")
-def author_index(prefix):
-    """Одна буква → список 3-буквенных префиксов;
-    3 буквы → список авторов."""
-    prefix = prefix.upper()
+@bp.route("/author-index/<letter>")
+def author_index(letter):
+    """Одна буква → список авторов."""
+    letter = letter.upper()
 
-    if len(prefix) == 1:
-        prefixes = stubs.get_author_prefixes_for_letter(prefix)
-        if prefixes is None:  # задел на реальную замену: БД недоступна
-            return render_template("error.html", message="Ошибка БД"), 503
-        return render_template(
-            "author_index.html",
-            prefix=prefix,
-            level="letter",
-            prefixes=prefixes,
-        )
-
-    authors = stubs.get_authors_by_prefix(prefix)
+    authors = stubs.get_authors_by_letter(letter)
     if authors is None:
         return render_template("error.html", message="Ошибка БД"), 503
     return render_template(
         "author_index.html",
-        prefix=prefix,
-        level="prefix",
+        letter=letter,
         authors=authors,
     )
-
 
 # ---------------------------------------------------------------------------
 # Автор
@@ -143,33 +129,19 @@ def publication(publication_id):
 # Указатель подразделений (двухуровневый, серверный, без JS)
 # ---------------------------------------------------------------------------
 
-@bp.route("/department-index/<prefix>")
-def department_index(prefix):
-    """Одна буква → список 3-буквенных префиксов;
-    3 буквы → список подразделений."""
-    prefix = prefix.upper()
+@bp.route("/department-index/<letter>")
+def department_index(letter):
+    """Одна буква → список подразделений."""
+    letter = letter.upper()
 
-    if len(prefix) == 1:
-        prefixes = stubs.get_department_prefixes_for_letter(prefix)
-        if prefixes is None:  # симуляция недоступности БД подразделений
-            return render_template("error.html", message="Ошибка БД"), 503
-        return render_template(
-            "department_index.html",
-            prefix=prefix,
-            level="letter",
-            prefixes=prefixes,
-        )
-
-    depts = stubs.get_departments_by_prefix(prefix)
-    if depts is None:
+    departments = stubs.get_departments_by_letter(letter)
+    if departments is None:
         return render_template("error.html", message="Ошибка БД"), 503
     return render_template(
         "department_index.html",
-        prefix=prefix,
-        level="prefix",
-        departments=depts,
+        letter=letter,
+        departments=departments,
     )
-
 
 # ---------------------------------------------------------------------------
 # Подразделение

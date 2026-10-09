@@ -96,37 +96,14 @@ def get_author_index_letters() -> list[str]:
     cyrillic = list('АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ')
     return  cyrillic + latin
 
-
-def get_author_prefixes_for_letter(letter: str) -> list[dict] | None:
-    """Трёхбуквенные префиксы фамилий авторов, начинающихся на ``letter``.
-
-    Использует ``scan`` по точке доступа ``cuba.Author3idx``.
-    Результат адаптируется под формат, ожидаемый шаблоном: ключ ``prefix``.
-    
-    Фильтрует только термины, начинающиеся с указанной буквы,
-    потому что SRU scan возвращает все термины после точки старта.
-    """
-    scan_clause = f'cuba.Author3idx={letter}'
-    terms = author_authority.scan(scan_clause, maximum_terms=DEFAULT_MAX_TERMS)
-    if terms is None:
-        return None
-    # Фильтруем: оставляем только префиксы, начинающиеся на запрошенную букву
-    letter_lower = letter.lower()
-    filtered = [
-        {'prefix': t['value'], 'count': t['count']}
-        for t in terms
-        if t['value'].lower().startswith(letter_lower)
-    ]
-    return filtered
-
-def get_authors_by_prefix(prefix: str) -> list | None:
-    """Список авторов, чья фамилия начинается с трёхбуквенного префикса."""
-    query = f'cuba.Author3idx="{prefix}"'
-    result = author_authority.search_retrieve(query, maximum_records=100)
-    if result is None:
-        return None
-    total, records = result
-    return [parsers.parse_author_record(r) for r in records]
+def get_authors_by_letter(letter: str) -> list[Author]:
+    """Список авторов, чья фамилия начинается на ``letter``."""
+    result = []
+    for author in AUTHORS.values():
+        surname = author.main_name.split()[0] if author.main_name else ""
+        if surname.upper().startswith(letter.upper()):
+            result.append(author)
+    return sorted(result, key=lambda a: a.main_name)
 
 
 # ---------------------------------------------------------------------------
@@ -199,37 +176,13 @@ def get_department_index_letters() -> list[str]:
     """Список букв для верхнего уровня индекса подразделений."""
     return get_author_index_letters()
 
-
-def get_department_prefixes_for_letter(letter: str) -> list[dict] | None:
-    """Трёхбуквенные префиксы названий подразделений, начинающихся на ``letter``.
-
-    Точка доступа для подразделений пока не определена; предполагается
-    ``cuba.Department3idx``.
-    
-    Фильтрует только термины, начинающиеся с указанной буквы.
-    """
-    scan_clause = f'cuba.CorpAuthor3idx={letter}'
-    terms = department_authority.scan(scan_clause, maximum_terms=100)
-    if terms is None:
-        return None
-    # Фильтруем: оставляем только префиксы, начинающиеся на запрошенную букву
-    letter_lower = letter.lower()
-    filtered = [
-        {'prefix': t['value'], 'count': t['count']}
-        for t in terms
-        if t['value'].lower().startswith(letter_lower)
-    ]
-    return filtered
-
-def get_departments_by_prefix(prefix: str) -> list | None:
-    """Список подразделений, чьё название начинается с префикса."""
-    query = f'cuba.CorpAuthor3idx="{prefix}"'
-    result = department_authority.search_retrieve(query, maximum_records=DEFAULT_MAX_RECORDS)
-    if result is None:
-        return None
-    total, records = result
-    return [parsers.parse_department_record(r) for r in records]
-
+def get_departments_by_letter(letter: str) -> list[Department]:
+    """Список подразделений, чьё название начинается на ``letter``."""
+    result = []
+    for dep in DEPARTMENTS.values():
+        if dep.name.upper().startswith(letter.upper()):
+            result.append(dep)
+    return sorted(result, key=lambda d: d.name)
 
 # ---------------------------------------------------------------------------
 # Подразделение
