@@ -36,16 +36,21 @@ class SRUClient:
         self.base_url = base_url.rstrip('/')
         self.timeout = timeout
 
+
     def search_retrieve(self, query: str, maximum_records: int = DEFAULT_MAX_RECORDS,
-                        start_record: int = 1) -> tuple[int, list] | None:
+                        start_record: int = 1, query_param_name: str = 'query') -> tuple[int, list] | None:
         """Выполняет ``operation=searchRetrieve``.
 
         Возвращает ``(общее число записей, список XML-элементов записей)``
         или ``None`` при ошибке.
+
+        Параметр ``query_param_name`` позволяет выбрать имя GET-параметра
+        для передачи запроса: по умолчанию ``query`` (стандартный CQL),
+        но можно задать ``x-pquery`` для CCL/PQF-запросов к серверам Aleph.
         """
         params = {
             'operation': 'searchRetrieve',
-            'query': query,
+            query_param_name: query,
             'maximumRecords': maximum_records,
             'startRecord': start_record,
         }
@@ -96,14 +101,15 @@ def get_author_index_letters() -> list[str]:
     cyrillic = list('АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ')
     return  cyrillic + latin
 
-def get_authors_by_letter(letter: str) -> list[Author]:
-    """Список авторов, чья фамилия начинается на ``letter``."""
-    result = []
-    for author in AUTHORS.values():
-        surname = author.main_name.split()[0] if author.main_name else ""
-        if surname.upper().startswith(letter.upper()):
-            result.append(author)
-    return sorted(result, key=lambda a: a.main_name)
+def get_authors_by_letter(letter: str) -> list | None:
+    """Список авторов, чья фамилия начинается с буквы."""
+    # Ищем по полю фамилии (cuba.AuthorSurname) с маской * в конце
+    query = f'cuba.AuthorSurname="{letter}*"'
+    result = author_authority.search_retrieve(query, maximum_records=DEFAULT_MAX_RECORDS)
+    if result is None:
+        return None
+    total, records = result
+    return [parsers.parse_author_record(r) for r in records]
 
 
 # ---------------------------------------------------------------------------
@@ -122,18 +128,41 @@ def get_author(authority_id: str):
     return parsers.parse_author_record(records[0])
 
 
-def get_publications_by_author_code(code_001: str) -> list:
-    """Публикации автора по первому коду 035 из авторитетной записи.
+def get_publications_by_author_code(
+    code_001: str,
+    page: int = 1,
+    per_page: int = 10,
+    sort: str = 'desc',
+) -> tuple[int, list]:
+    """Публикации автора с серверной пагинацией и сортировкой.
 
-    Ищет в библиографической базе по точке доступа ``cuba.AuthorityAuthorCode``.
+    Использует CCL-запрос через параметр ``x-pquery``:
+    поиск по ``@attr 1=Authority-author-code`` и сортировка по атрибуту 31.
+
+    :param code_001: идентификатор авторитетной записи автора.
+    :param page: номер страницы (начинается с 1).
+    :param per_page: размер страницы (``maximumRecords``).
+    :param sort: ``'asc'`` → ``@attr 7=1``, ``'desc'`` → ``@attr 7=2``.
+    :return: ``(общее число публикаций, список записей на текущей странице)``.
     """
-    query = f'cuba.AuthorityAuthorCode="{code_001}"'
-    result = bibliographic.search_retrieve(query, maximum_records=DEFAULT_MAX_RECORDS)
-    if result is None:
-        return []
-    total, records = result
-    return [parsers.parse_publication_record(r) for r in records]
+    sort_attr = '1' if sort == 'asc' else '2'
+    ccl = (
+        f'@or @attr 1=Authority-author-code {code_001} '
+        f'@attr 7={sort_attr} @attr 1=31 0'
+    )
 
+    start_record = (page - 1) * per_page + 1
+    result = bibliographic.search_retrieve(
+        ccl,
+        maximum_records=per_page,
+        start_record=start_record,
+        query_param_name='x-pquery',
+    )
+    if result is None:
+        return 0, []
+    total, records = result
+    publications = [parsers.parse_publication_record(r) for r in records]
+    return total, publications
 
 def get_publications_about_author(author_id: str) -> list:
     """Публикации об авторе.
@@ -176,13 +205,16 @@ def get_department_index_letters() -> list[str]:
     """Список букв для верхнего уровня индекса подразделений."""
     return get_author_index_letters()
 
-def get_departments_by_letter(letter: str) -> list[Department]:
-    """Список подразделений, чьё название начинается на ``letter``."""
-    result = []
-    for dep in DEPARTMENTS.values():
-        if dep.name.upper().startswith(letter.upper()):
-            result.append(dep)
-    return sorted(result, key=lambda d: d.name)
+
+def get_departments_by_letter(letter: str) -> list | None:
+    """Список подразделений, чьё название начинается с буквы."""
+    # Ищем по полю корпоративного автора (cuba.CorpAuthor) с маской * в конце
+    query = f'cuba.CorpAuthor="{letter}*"'
+    result = department_authority.search_retrieve(query, maximum_records=DEFAULT_MAX_RECORDS)
+    if result is None:
+        return None
+    total, records = result
+    return [parsers.parse_department_record(r) for r in records]
 
 # ---------------------------------------------------------------------------
 # Подразделение

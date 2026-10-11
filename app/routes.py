@@ -83,25 +83,47 @@ def author_index(letter):
 
 @bp.route("/author/<authority_id>")
 def author(authority_id):
-    """Экран автора: фото, метаданные, публикации, публикации об авторе."""
+    """Экран автора: фото, метаданные, публикации (серверная пагинация),
+    публикации об авторе."""
     author_obj = stubs.get_author(authority_id)
     if not author_obj:
         return render_template("error.html", message="Автор не найден"), 404
 
-    # Публикации автора — по первому коду 035 из авторитетной записи
-    publications = stubs.get_publications_by_author_code(author_obj.id) #author_obj.code_035)
-    #publications2 = stubs.get_publications_by_author_code(authority2_id) #author_obj.code_035)
-    #publications = publications + publications2
-    # Публикации об авторе
+    # --- Параметры пагинации и сортировки ---
+    page = request.args.get("page", 1, type=int)
+    sort = request.args.get("sort", "date")
+    per_page = 10
+
+    # Сортировка на сервере:
+    # date → по убыванию (сначала новые)
+    # title → по возрастанию (по алфавиту)
+    direction = "asc" if sort == "title" else "desc"
+
+    # --- Запрос к SRU с серверной пагинацией и сортировкой ---
+    total, publications = stubs.get_publications_by_author_code(
+        author_obj.id,
+        page=page,
+        per_page=per_page,
+        sort=direction,
+    )
+
+    # Публикации об авторе (пока без пагинации)
     about = stubs.get_publications_about_author(author_obj.id)
     about += stubs.get_publications_about_author(author_obj.codes_035[0])
 
-    # Сортировка (через GET-параметр, без JS)
-    sort = request.args.get("sort", "date")
-    if sort == "date":
-        publications = sorted(publications, key=lambda p: p.year or 0, reverse=True)
-    elif sort == "title":
-        publications = sorted(publications, key=lambda p: p.title)
+    # --- Построение диапазонов для пагинатора ---
+    total_pages = max(1, (total + per_page - 1) // per_page)
+    # Защита: если номер страницы ушёл за пределы (например, удалили публикации)
+    page = max(1, min(page, total_pages))
+    page_ranges = []
+    for p in range(1, total_pages + 1):
+        r_start = (p - 1) * per_page + 1
+        r_end = min(p * per_page, total)
+        page_ranges.append({
+            'page': p,
+            'label': f"{r_start}-{r_end}",
+            'current': p == page,
+        })
 
     return render_template(
         "author.html",
@@ -109,6 +131,11 @@ def author(authority_id):
         publications=publications,
         about=about,
         sort=sort,
+        pagination={
+            'current': page,
+            'total': total,
+            'ranges': page_ranges,
+        },
     )
 
 

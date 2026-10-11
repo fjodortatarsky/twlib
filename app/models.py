@@ -13,6 +13,7 @@ class Author:
     photo_url: str | None = None
     alternative_names: list = field(default_factory=list)
     codes_001: list = field(default_factory=list)
+    identifiers_017: list = field(default_factory=list)
     codes_035: list = field(default_factory=list)
 
     @property

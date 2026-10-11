@@ -196,11 +196,27 @@ def parse_author_record(record) -> Author:
     for df in df_200_list:  # df_200_list уже собран выше
         titles.extend(_get_all_subfields(df, 'c'))
 
-    # --- Биографическая информация: 830$a ---
+    # --- Биографическая информация: 340$a (собираем все подполя $a) ---
     description = None
-    df_340_list = _find_datafields(record, '340')
-    if df_340_list:
-        description = _get_first_subfield(df_340_list[0], 'a')
+    description_parts = []
+    for df in _find_datafields(record, '340'):
+        # Итерируемся по всем подполям внутри каждого поля 340
+        for sf in df.findall(f'{MARC}subfield'):
+            if sf.get('code') == 'a' and sf.text:
+                description_parts.append(sf.text.strip())
+    
+    # Склеиваем абзацы двойным переносом строки
+    description = '\n\n'.join(description_parts) if description_parts else None
+
+
+    # --- Идентификаторы: 017 ($2 — источник, $a — номер) ---
+    identifiers_017 = []
+    for df in _find_datafields(record, '017'):
+        source = _get_first_subfield(df, '2') or ''
+        number = _get_first_subfield(df, 'a') or ''
+        if source or number:
+            identifiers_017.append({'source': source, 'value': number})
+
     # Фото / профиль: 856$u
     photo_url = None
     for df in _find_datafields(record, '856'):
@@ -230,6 +246,7 @@ def parse_author_record(record) -> Author:
         photo_url=photo_url,
         alternative_names=alternative_names,
         codes_035=codes_035,
+        identifiers_017=identifiers_017,
     )
 
 # ---------------------------------------------------------------------------

@@ -40,6 +40,7 @@ index.cuba.AuthorSurname = 1=AuthorSurname
 index.cuba.LocalId       = 1=Local-number
 index.cuba.authorityAuthorCode = 1=Authority-author-code 
 index.cql.sortByDateDescending = 7=2 1=31 2
+index.cql.sortByDateAscending = 7=2 1=31 2
 
 # Relation info
 relation.<  = 2=1
