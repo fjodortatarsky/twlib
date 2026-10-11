@@ -53,6 +53,16 @@ class Publication:
     def entity_type(self) -> str:
         return "publication"
 
+# Порог для группировки публикаций по категориям
+GROUPING_THRESHOLD = 20
+
+# Типы контента: идентификатор SRU -> название для пользователя
+CONTENT_TYPES = {
+    'digital': 'Электронные ресурсы',
+    'dissertation': 'Диссертации',
+    'classbook': 'Учебные пособия',
+    'article': 'Статьи',
+}
 
 @dataclass
 class Department:
@@ -64,3 +74,4 @@ class Department:
     @property
     def entity_type(self) -> str:
         return "department"
+

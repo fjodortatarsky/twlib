@@ -84,6 +84,7 @@
        <xsl:call-template name="AuthorityCorpCode"/>
        <xsl:call-template name="AuthorityCorpName"/>
        <xsl:call-template name="DateOfPublication"/>
+       <xsl:call-template name="ContentType"/>
        <xsl:call-template name="any"/>
    </xsl:template>
 
@@ -212,6 +213,30 @@
 	        <xsl:value-of select="substring(., 10, 4)"/>
         </z:index>
     </xsl:for-each>
+  </xsl:template>
+
+  <xsl:template name="ContentType">
+      <xsl:if test="marc:datafield[@tag='337']/marc:subfield[@code='a'] and
+                    marc:datafield[@tag='856']/marc:subfield[@code='u']">
+        <z:index name="Content-type:w Content-type:s">
+          <xsl:text>digital</xsl:text>
+        </z:index>
+      </xsl:if>
+      <xsl:if test="contains(substring(marc:datafield[@tag='105']/marc:subfield[@code='a'], 4, 4), 'm')">
+        <z:index name="Content-type:w Content-type:s">
+          <xsl:text>dissertation</xsl:text>
+        </z:index>
+      </xsl:if>
+      <xsl:if test="contains(substring(marc:datafield[@tag='105']/marc:subfield[@code='a'], 4, 4), 'j')">
+        <z:index name="Content-type:w Content-type:s">
+          <xsl:text>classbook</xsl:text>
+        </z:index>
+      </xsl:if>
+      <xsl:if test="contains(substring(marc:leader, 7, 1), 'a')">
+        <z:index name="Content-type:w Content-type:s">
+          <xsl:text>article</xsl:text>
+        </z:index>
+      </xsl:if>
   </xsl:template>
 
   <!--xsl:template name="DateOfPublication">

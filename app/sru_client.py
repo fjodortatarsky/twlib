@@ -133,6 +133,7 @@ def get_publications_by_author_code(
     page: int = 1,
     per_page: int = 10,
     sort: str = 'desc',
+    content_type: str | None = None,
 ) -> tuple[int, list]:
     """Публикации автора с серверной пагинацией и сортировкой.
 
@@ -145,11 +146,19 @@ def get_publications_by_author_code(
     :param sort: ``'asc'`` → ``@attr 7=1``, ``'desc'`` → ``@attr 7=2``.
     :return: ``(общее число публикаций, список записей на текущей странице)``.
     """
+
     sort_attr = '1' if sort == 'asc' else '2'
-    ccl = (
-        f'@or @attr 1=Authority-author-code {code_001} '
-        f'@attr 7={sort_attr} @attr 1=31 0'
-    )
+    
+    if content_type:
+        ccl = (
+            f'@or @and @attr 1=Authority-author-code {code_001} '
+            f'@attr 1=Content-type {content_type} @attr 7={sort_attr} @attr 1=31 0'
+        )
+    else:
+        ccl = (
+            f'@or @attr 1=Authority-author-code {code_001} '
+            f'@attr 7={sort_attr} @attr 1=31 0'
+        )
 
     start_record = (page - 1) * per_page + 1
     result = bibliographic.search_retrieve(
@@ -163,6 +172,39 @@ def get_publications_by_author_code(
     total, records = result
     publications = [parsers.parse_publication_record(r) for r in records]
     return total, publications
+
+
+def get_publications_count_by_author_code(code_001: str) -> int:
+    """Возвращает общее количество публикаций автора без самих записей."""
+    ccl = f'@or @attr 1=Authority-author-code {code_001} @attr 7=1 @attr 1=31 0'
+    result = bibliographic.search_retrieve(
+        ccl,
+        maximum_records=0,
+        start_record=1,
+        query_param_name='x-pquery',
+    )
+    if result is None:
+        return 0
+    total, _ = result
+    return total
+
+def get_publications_count_by_content_type(code_001: str, content_type: str) -> int:
+    """Возвращает количество публикаций автора определенного типа контента."""
+    ccl = (
+        f'@or @and @attr 1=Authority-author-code {code_001} '
+        f'@attr 1=Content-type {content_type} @attr 7=1 @attr 1=31 0'
+    )
+    result = bibliographic.search_retrieve(
+        ccl,
+        maximum_records=0,
+        start_record=1,
+        query_param_name='x-pquery',
+    )
+    if result is None:
+        return 0
+    total, _ = result
+    return total
+
 
 def get_publications_about_author(author_id: str) -> list:
     """Публикации об авторе.

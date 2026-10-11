@@ -9,6 +9,7 @@ from flask import Blueprint, render_template, request
 
 #from . import stubs
 from . import sru_client as stubs
+from . import models
 
 
 bp = Blueprint("main", __name__)
@@ -83,7 +84,7 @@ def author_index(letter):
 
 @bp.route("/author/<authority_id>")
 def author(authority_id):
-    """Экран автора: фото, метаданные, публикации (серверная пагинация),
+    """Экран автора: фото, метаданные, публикации (с группировкой по категориям),
     публикации об авторе."""
     author_obj = stubs.get_author(authority_id)
     if not author_obj:
@@ -92,6 +93,7 @@ def author(authority_id):
     # --- Параметры пагинации и сортировки ---
     page = request.args.get("page", 1, type=int)
     sort = request.args.get("sort", "date")
+    category = request.args.get("category")  # выбранная категория
     per_page = 10
 
     # Сортировка на сервере:
@@ -99,13 +101,45 @@ def author(authority_id):
     # title → по возрастанию (по алфавиту)
     direction = "asc" if sort == "title" else "desc"
 
-    # --- Запрос к SRU с серверной пагинацией и сортировкой ---
-    total, publications = stubs.get_publications_by_author_code(
-        author_obj.id,
-        page=page,
-        per_page=per_page,
-        sort=direction,
-    )
+    # --- Получаем общее количество публикаций ---
+    total = stubs.get_publications_count_by_author_code(author_obj.id)
+
+    # --- Определяем, нужно ли группировать по категориям ---
+    categories = []
+    grouped = total > models.GROUPING_THRESHOLD
+
+    if grouped:
+        # Получаем количество публикаций для каждой категории
+        for content_type_key, content_type_name in models.CONTENT_TYPES.items():
+            count = stubs.get_publications_count_by_content_type(author_obj.id, content_type_key)
+            if count > 0:
+                categories.append({
+                    'key': content_type_key,
+                    'name': content_type_name,
+                    'count': count,
+                })
+
+    # --- Запрос публикаций ---
+    if grouped and category:
+        # Показываем публикации только выбранной категории
+        filtered_total, publications = stubs.get_publications_by_author_code(
+            author_obj.id,
+            page=page,
+            per_page=per_page,
+            sort=direction,
+            content_type=category,
+        )
+        total = filtered_total  # переопределяем total для пагинации
+    else:
+        # Показываем все публикации (без группировки или без выбранной категории)
+        publications = []
+        if not grouped:
+            total, publications = stubs.get_publications_by_author_code(
+                author_obj.id,
+                page=page,
+                per_page=per_page,
+                sort=direction,
+            )
 
     # Публикации об авторе (пока без пагинации)
     about = stubs.get_publications_about_author(author_obj.id)
@@ -113,7 +147,6 @@ def author(authority_id):
 
     # --- Построение диапазонов для пагинатора ---
     total_pages = max(1, (total + per_page - 1) // per_page)
-    # Защита: если номер страницы ушёл за пределы (например, удалили публикации)
     page = max(1, min(page, total_pages))
     page_ranges = []
     for p in range(1, total_pages + 1):
@@ -131,6 +164,9 @@ def author(authority_id):
         publications=publications,
         about=about,
         sort=sort,
+        category=category,
+        categories=categories,
+        grouped=grouped,
         pagination={
             'current': page,
             'total': total,
