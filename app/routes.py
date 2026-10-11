@@ -101,15 +101,15 @@ def author(authority_id):
     # title → по возрастанию (по алфавиту)
     direction = "asc" if sort == "title" else "desc"
 
+
     # --- Получаем общее количество публикаций ---
-    total = stubs.get_publications_count_by_author_code(author_obj.id)
+    total_all = stubs.get_publications_count_by_author_code(author_obj.id)
 
     # --- Определяем, нужно ли группировать по категориям ---
     categories = []
-    grouped = total > models.GROUPING_THRESHOLD
-
+    grouped = total_all > models.GROUPING_THRESHOLD
+    
     if grouped:
-        # Получаем количество публикаций для каждой категории
         for content_type_key, content_type_name in models.CONTENT_TYPES.items():
             count = stubs.get_publications_count_by_content_type(author_obj.id, content_type_key)
             if count > 0:
@@ -120,28 +120,27 @@ def author(authority_id):
                 })
 
     # --- Запрос публикаций ---
+    publications = []
+    total = 0
     if grouped and category:
         # Показываем публикации только выбранной категории
-        filtered_total, publications = stubs.get_publications_by_author_code(
+        total, publications = stubs.get_publications_by_author_code(
             author_obj.id,
             page=page,
             per_page=per_page,
             sort=direction,
             content_type=category,
         )
-        total = filtered_total  # переопределяем total для пагинации
-    else:
-        # Показываем все публикации (без группировки или без выбранной категории)
-        publications = []
-        if not grouped:
-            total, publications = stubs.get_publications_by_author_code(
-                author_obj.id,
-                page=page,
-                per_page=per_page,
-                sort=direction,
-            )
+    elif not grouped:
+        # Показываем все публикации без группировки
+        total, publications = stubs.get_publications_by_author_code(
+            author_obj.id,
+            page=page,
+            per_page=per_page,
+            sort=direction,
+        )
 
-    # Публикации об авторе (пока без пагинации)
+    # Публикации об авторе
     about = stubs.get_publications_about_author(author_obj.id)
     about += stubs.get_publications_about_author(author_obj.codes_035[0])
 
@@ -167,13 +166,13 @@ def author(authority_id):
         category=category,
         categories=categories,
         grouped=grouped,
+        total_all=total_all,  # ← добавь это
         pagination={
             'current': page,
             'total': total,
             'ranges': page_ranges,
         },
     )
-
 
 # ---------------------------------------------------------------------------
 # Публикация
