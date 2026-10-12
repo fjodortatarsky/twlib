@@ -17,6 +17,8 @@ import requests
 
 from . import parsers
 
+import concurrent.futures
+
 logger = logging.getLogger(__name__)
 
 # Адреса SRU-серверов (предположения)
@@ -92,14 +94,59 @@ department_authority = SRUClient(DEPARTMENT_AUTHORITY_URL)
 # Индексы авторов
 # ---------------------------------------------------------------------------
 
-def get_author_index_letters() -> list[str]:
-    """Список букв для верхнего уровня индекса авторов.
+def _sort_letters(letters: list[str]) -> list[str]:
+    """Сортирует список букв: сначала кириллица, потом латиница.
 
-    Статический список, не требует запроса к серверу.
+    Очищает список от дублей, спецсимволов и приводит к верхнему регистру.
     """
-    latin = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
     cyrillic = list('АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ')
-    return  cyrillic + latin
+    latin = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+
+    clean_letters = []
+    for l in letters:
+        upper_l = l.upper()
+        if (upper_l in cyrillic or upper_l in latin) and upper_l not in clean_letters:
+            clean_letters.append(upper_l)
+
+    def sort_key(letter):
+        if letter in cyrillic:
+            return (0, cyrillic.index(letter))
+        elif letter in latin:
+            return (1, latin.index(letter))
+        return (2, letter)
+
+    return sorted(clean_letters, key=sort_key)
+
+def get_author_index_letters() -> list[str]:
+    letters_to_check = list('АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ') + list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+
+    def check_letter(letter):
+        # Ищем хотя бы одну запись. maximum_records=1 достаточно, чтобы узнать total.
+        query = f'cuba.AuthorSurname="{letter}*"'
+        result = author_authority.search_retrieve(query, maximum_records=1)
+
+        # Возвращаем букву, если сервер ответил и количество записей > 0
+        if result and result[0] > 0:
+            return letter
+        return None
+
+    # Параллельное выполнение в 15 потоков
+    with concurrent.futures.ThreadPoolExecutor(max_workers=15) as executor:
+        # executor.map сохраняет порядок, но мы все равно будем сортировать
+        results = executor.map(check_letter, letters_to_check)
+
+    active_letters = [letter for letter in results if letter]
+    return _sort_letters(active_letters)
+
+
+#def get_author_index_letters() -> list[str]:
+#    """Список букв для верхнего уровня индекса авторов.
+#
+#    Статический список, не требует запроса к серверу.
+#    """
+#    latin = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+#    cyrillic = list('АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ')
+#    return  cyrillic + latin
 
 def get_authors_by_letter(letter: str) -> list | None:
     """Список авторов, чья фамилия начинается с буквы."""
@@ -243,10 +290,25 @@ def get_publication(publication_id: str):
 # Индексы подразделений
 # ---------------------------------------------------------------------------
 
+#def get_department_index_letters() -> list[str]:
+#    """Список букв для верхнего уровня индекса подразделений."""
+#    return get_author_index_letters()
 def get_department_index_letters() -> list[str]:
-    """Список букв для верхнего уровня индекса подразделений."""
-    return get_author_index_letters()
+    """Список первых букв названий подразделений."""
+    letters_to_check = list('АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ') + list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+    
+    def check_letter(letter):
+        query = f'cuba.CorpAuthor="{letter}*"'
+        result = department_authority.search_retrieve(query, maximum_records=1)
+        if result and result[0] > 0:
+            return letter
+        return None
 
+    with concurrent.futures.ThreadPoolExecutor(max_workers=15) as executor:
+        results = executor.map(check_letter, letters_to_check)
+        
+    active_letters = [letter for letter in results if letter]
+    return _sort_letters(active_letters)
 
 def get_departments_by_letter(letter: str) -> list | None:
     """Список подразделений, чьё название начинается с буквы."""
