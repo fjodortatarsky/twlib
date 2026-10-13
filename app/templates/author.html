@@ -84,7 +84,7 @@
 
   <section class="publications-section">
 
-    {# -------- Макрос пагинатора (используется дважды) -------- #}
+    {# -------- Макрос пагинатора -------- #}
     {% macro paginator() %}
     {% if pagination and pagination.ranges|length > 1 %}
     <nav class="paginator">
@@ -101,8 +101,7 @@
     {% endif %}
     {% endmacro %}
 
-    {# -------- Шапка секции -------- #}
-
+    {# -------- Единая шапка секции (отображается всегда строго один раз) -------- #}
     <div class="section-header">
       <h2 class="section-title">
         Публикации автора
@@ -130,7 +129,7 @@
       </div>
     </div>
 
-    {# -------- Группировка по категориям -------- #}
+    {# -------- Список категорий (если включена группировка) -------- #}
     {% if grouped %}
     <div class="categories-list">
       <p>Найдено {{ total_all }} публикаций.</p>
@@ -151,76 +150,11 @@
         {% endfor %}
       </ul>
     </div>
-
-    {# -------- Раскрытая категория: список публикаций -------- #}
-    {% if category %}
-      <div class="section-header">
-        <h2 class="section-title">
-          Публикации автора — {{ categories|selectattr('key', 'equalto', category)|map(attribute='name')|first }}
-        </h2>
-        <div class="sort-controls">
-          <span class="sort-label">Сортировка:</span>
-          {% if sort == 'date' %}
-          <span class="sort-current">по дате</span>
-          <a href="?category={{ category }}&sort=title{% if pagination and pagination.current > 1 %}&page={{ pagination.current }}{% endif %}"
-             class="sort-link">по названию</a>
-          {% else %}
-          <a href="?category={{ category }}&sort=date{% if pagination and pagination.current > 1 %}&page={{ pagination.current }}{% endif %}"
-             class="sort-link">по дате</a>
-          <span class="sort-current">по названию</span>
-          {% endif %}
-        </div>
-      </div>
-
-      {{ paginator() }}
-
-      <ul class="publication-list">
-        {% for pub in publications %}
-        <li class="publication-item">
-          <a href="{{ url_for('main.publication', publication_id=pub.id) }}"
-             class="publication-title">
-            {{ pub.title }}{% if pub.subtitle %}: {{ pub.subtitle }}{% endif %}
-          </a>
-          <div class="publication-meta">
-            {% if pub.authors %}
-            {% for a in pub.authors %}
-            {% if a.authority_id %}
-            <a href="{{ url_for('main.author', authority_id=a.authority_id) }}">{{ a.name }}</a>
-            {% else %}
-            <span>{{ a.name }}</span>
-            {% endif %}
-            {% if not loop.last %}, {% endif %}
-            {% endfor %}
-            {% endif %}
-            {% if pub.year %}<span class="meta-year">{{ pub.year }}</span>{% endif %}
-          </div>
-        </li>
-        {% else %}
-        <li class="empty-note">Публикации не найдены.</li>
-        {% endfor %}
-      </ul>
-
-      {{ paginator() }}
     {% endif %}
 
-    {% else %}
-    {# -------- Не группировано: обычный список -------- #}
-      <div class="section-header">
-        <h2 class="section-title">Публикации автора</h2>
-        <div class="sort-controls">
-          <span class="sort-label">Сортировка:</span>
-          {% if sort == 'date' %}
-          <span class="sort-current">по дате</span>
-          <a href="?sort=title{% if pagination and pagination.current > 1 %}&page={{ pagination.current }}{% endif %}"
-             class="sort-link">по названию</a>
-          {% else %}
-          <a href="?sort=date{% if pagination and pagination.current > 1 %}&page={{ pagination.current }}{% endif %}"
-             class="sort-link">по дате</a>
-          <span class="sort-current">по названию</span>
-          {% endif %}
-        </div>
-      </div>
-
+    {# -------- Список публикаций (отображается, если выбрана категория или группировка отключена) -------- #}
+    {% if category or not grouped %}
+      
       {{ paginator() }}
 
       <ul class="publication-list">
@@ -249,7 +183,10 @@
         {% endfor %}
       </ul>
 
-      {{ paginator() }}
+      {# Пагинатор внизу убран, чтобы строго соответствовать требованию "всегда только один раз". 
+         Если он всё же нужен и в нижней части списка, просто раскомментируйте строку ниже: #}
+      {# {{ paginator() }} #}
+      
     {% endif %}
 
   </section>
