@@ -174,38 +174,38 @@ def get_author(authority_id: str):
         return None
     return parsers.parse_author_record(records[0])
 
+def _build_author_ccl_query(ids: list[str], sort_attr: str, content_type: str | None = None) -> str:
+    """Формирует CCL-запрос для одного или нескольких ID автора, сохраняя оригинальную структуру."""
+    if not ids:
+        return ""
+    
+    # Собираем условия для всех ID через @or
+    # Для одного ID: @attr 1=Authority-author-code ID
+    # Для двух: @or @attr 1=Authority-author-code ID1 @attr 1=Authority-author-code ID2
+    # Для трёх: @or @or @attr 1=Authority-author-code ID1 @attr 1=Authority-author-code ID2 @attr 1=Authority-author-code ID3
+    id_query = f"@attr 1=Authority-author-code {ids[0]}"
+    for i in range(1, len(ids)):
+        id_query = f"@or {id_query} @attr 1=Authority-author-code {ids[i]}"
+        
+    if content_type:
+        return f"@or @and {id_query} @attr 1=Content-type {content_type} @attr 7={sort_attr} @attr 1=31 0"
+    else:
+        return f"@or {id_query} @attr 7={sort_attr} @attr 1=31 0"
 
 def get_publications_by_author_code(
-    code_001: str,
+    code_001: str | list[str],
     page: int = 1,
     per_page: int = 10,
     sort: str = 'desc',
     content_type: str | None = None,
 ) -> tuple[int, list]:
-    """Публикации автора с серверной пагинацией и сортировкой.
-
-    Использует CCL-запрос через параметр ``x-pquery``:
-    поиск по ``@attr 1=Authority-author-code`` и сортировка по атрибуту 31.
-
-    :param code_001: идентификатор авторитетной записи автора.
-    :param page: номер страницы (начинается с 1).
-    :param per_page: размер страницы (``maximumRecords``).
-    :param sort: ``'asc'`` → ``@attr 7=1``, ``'desc'`` → ``@attr 7=2``.
-    :return: ``(общее число публикаций, список записей на текущей странице)``.
-    """
+    if isinstance(code_001, str):
+        ids = [code_001]
+    else:
+        ids = list(dict.fromkeys(code_001))  # Убираем дубликаты, сохраняя порядок
 
     sort_attr = '1' if sort == 'asc' else '2'
-    
-    if content_type:
-        ccl = (
-            f'@or @and @attr 1=Authority-author-code {code_001} '
-            f'@attr 1=Content-type {content_type} @attr 7={sort_attr} @attr 1=31 0'
-        )
-    else:
-        ccl = (
-            f'@or @attr 1=Authority-author-code {code_001} '
-            f'@attr 7={sort_attr} @attr 1=31 0'
-        )
+    ccl = _build_author_ccl_query(ids, sort_attr, content_type)
 
     start_record = (page - 1) * per_page + 1
     result = bibliographic.search_retrieve(
@@ -221,26 +221,13 @@ def get_publications_by_author_code(
     return total, publications
 
 
-def get_publications_count_by_author_code(code_001: str) -> int:
-    """Возвращает общее количество публикаций автора без самих записей."""
-    ccl = f'@or @attr 1=Authority-author-code {code_001} @attr 7=1 @attr 1=31 0'
-    result = bibliographic.search_retrieve(
-        ccl,
-        maximum_records=0,
-        start_record=1,
-        query_param_name='x-pquery',
-    )
-    if result is None:
-        return 0
-    total, _ = result
-    return total
-
-def get_publications_count_by_content_type(code_001: str, content_type: str) -> int:
-    """Возвращает количество публикаций автора определенного типа контента."""
-    ccl = (
-        f'@or @and @attr 1=Authority-author-code {code_001} '
-        f'@attr 1=Content-type {content_type} @attr 7=1 @attr 1=31 0'
-    )
+def get_publications_count_by_author_code(code_001: str | list[str]) -> int:
+    if isinstance(code_001, str):
+        ids = [code_001]
+    else:
+        ids = list(dict.fromkeys(code_001))
+        
+    ccl = _build_author_ccl_query(ids, '1', None)
     result = bibliographic.search_retrieve(
         ccl,
         maximum_records=0,
@@ -253,22 +240,52 @@ def get_publications_count_by_content_type(code_001: str, content_type: str) -> 
     return total
 
 
-def get_publications_about_author(author_id: str) -> list:
-    """Публикации об авторе.
+def get_publications_count_by_content_type(code_001: str | list[str], content_type: str) -> int:
+    if isinstance(code_001, str):
+        ids = [code_001]
+    else:
+        ids = list(dict.fromkeys(code_001))
+        
+    ccl = _build_author_ccl_query(ids, '1', content_type)
+    result = bibliographic.search_retrieve(
+        ccl,
+        maximum_records=0,
+        start_record=1,
+        query_param_name='x-pquery',
+    )
+    if result is None:
+        return 0
+    total, _ = result
+    return total
 
-    Точка доступа в библио-БД пока не определена; предполагается
-    ``cuba.AboutAuthorCode``, ищется по значению 035 авторитетной записи.
-    """
-    author = get_author(author_id)
-    if not author or not author.code_035:
+def get_publications_about_author(author_id: str | list[str]) -> list:
+    if isinstance(author_id, str):
+        ids = [author_id]
+    else:
+        ids = list(dict.fromkeys(author_id))
+
+    if not ids:
         return []
-    query = f'cuba.authorityAboutCode="{author_id}"'
-    result = bibliographic.search_retrieve(query, maximum_records=DEFAULT_MAX_RECORDS)
+
+    # Проверяем наличие code_035 хотя бы у одной из записей автора
+    has_code_035 = False
+    for aid in ids:
+        author = get_author(aid)
+        if author and author.code_035:
+            has_code_035 = True
+            break
+
+    if not has_code_035:
+        return []
+
+    # Формируем CQL-запрос с OR для нескольких ID
+    about_query = ' or '.join([f'cuba.authorityAboutCode="{aid}"' for aid in ids])
+
+    result = bibliographic.search_retrieve(about_query, maximum_records=DEFAULT_MAX_RECORDS)
     if result is None:
         return []
     total, records = result
     return [parsers.parse_publication_record(r) for r in records]
-
 
 # ---------------------------------------------------------------------------
 # Публикация
