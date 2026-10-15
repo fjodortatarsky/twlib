@@ -279,14 +279,46 @@ def get_publications_count_by_content_type(code_001: str | list[str], content_ty
     total, _ = result
     return total
 
-def get_publications_about_author(author_id: str | list[str]) -> list:
+def get_publications_about_author_count(author_id: str | list[str]) -> int:
+    """Возвращает количество публикаций об авторе."""
     if isinstance(author_id, str):
         ids = [author_id]
     else:
         ids = list(dict.fromkeys(author_id))
 
     if not ids:
-        return []
+        return 0
+
+    has_code_035 = False
+    for aid in ids:
+        author = get_author(aid)
+        if author and author.code_035:
+            has_code_035 = True
+            break
+
+    if not has_code_035:
+        return 0
+
+    about_query = ' or '.join([f'cuba.authorityAboutCode="{aid}"' for aid in ids])
+    result = bibliographic.search_retrieve(about_query, maximum_records=0)
+    if result is None:
+        return 0
+    total, _ = result
+    return total
+
+def get_publications_about_author(
+    author_id: str | list[str],
+    page: int = 1,
+    per_page: int = 10,
+) -> tuple[int, list]:
+    """Возвращает (общее число, список публикаций) об авторе с пагинацией."""
+    if isinstance(author_id, str):
+        ids = [author_id]
+    else:
+        ids = list(dict.fromkeys(author_id))
+
+    if not ids:
+        return 0, []
 
     # Проверяем наличие code_035 хотя бы у одной из записей автора
     has_code_035 = False
@@ -297,17 +329,22 @@ def get_publications_about_author(author_id: str | list[str]) -> list:
             break
 
     if not has_code_035:
-        return []
+        return 0, []
 
     # Формируем CQL-запрос с OR для нескольких ID
     about_query = ' or '.join([f'cuba.authorityAboutCode="{aid}"' for aid in ids])
 
-    result = bibliographic.search_retrieve(about_query, maximum_records=DEFAULT_MAX_RECORDS)
+    start_record = (page - 1) * per_page + 1
+    result = bibliographic.search_retrieve(
+        about_query,
+        maximum_records=per_page,
+        start_record=start_record,
+    )
     if result is None:
-        return []
+        return 0, []
     total, records = result
     publications = [parsers.parse_publication_record(r) for r in records]
-    return _enrich_publications(publications, records)
+    return total, _enrich_publications(publications, records)
 
 # ---------------------------------------------------------------------------
 # Публикация

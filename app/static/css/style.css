@@ -488,6 +488,8 @@ a.letter-link:hover {
 .publication-title {
     font-size: 1.05rem;
     display: block;
+    text-align: justify;
+    hyphens: auto;
 }
 
 .publication-meta {

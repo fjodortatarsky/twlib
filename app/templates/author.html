@@ -101,119 +101,72 @@
     {% endif %}
     {% endmacro %}
 
-    {# -------- Единая шапка секции (отображается всегда строго один раз) -------- #}
+
+        {# -------- Единая шапка секции -------- #}
     <div class="section-header">
       <h2 class="section-title">
         Публикации автора
-        {% if category %}
-          — {{ categories|selectattr('key', 'equalto', category)|map(attribute='name')|first }}
+        {% if category and category != 'all' %}
+          {% if category == 'about' %}
+            — Об авторе
+          {% else %}
+            — {{ categories|selectattr('key', 'equalto', category)|map(attribute='name')|first }}
+          {% endif %}
         {% endif %}
       </h2>
       <div class="sort-controls">
-        {% if grouped and not category %}
-          <a href="{{ url_for('main.author', authority_id=author.id) }}" class="sort-link">
-            Назад ко всем категориям
-          </a>
+        <span class="sort-label">Сортировка:</span>
+        {% if sort == 'date' %}
+        <span class="sort-current">по дате</span>
+        <a href="?sort=title{% if pagination and pagination.current > 1 %}&page={{ pagination.current }}{% endif %}{% if category %}&category={{ category }}{% endif %}"
+           class="sort-link">по названию</a>
         {% else %}
-          <span class="sort-label">Сортировка:</span>
-          {% if sort == 'date' %}
-          <span class="sort-current">по дате</span>
-          <a href="?sort=title{% if pagination and pagination.current > 1 %}&page={{ pagination.current }}{% endif %}{% if category %}&category={{ category }}{% endif %}"
-             class="sort-link">по названию</a>
-          {% else %}
-          <a href="?sort=date{% if pagination and pagination.current > 1 %}&page={{ pagination.current }}{% endif %}{% if category %}&category={{ category }}{% endif %}"
-             class="sort-link">по дате</a>
-          <span class="sort-current">по названию</span>
-          {% endif %}
+        <a href="?sort=date{% if pagination and pagination.current > 1 %}&page={{ pagination.current }}{% endif %}{% if category %}&category={{ category }}{% endif %}"
+           class="sort-link">по дате</a>
+        <span class="sort-current">по названию</span>
         {% endif %}
       </div>
     </div>
 
-    {# -------- Список категорий (если включена группировка) -------- #}
-    {% if grouped %}
-    <div class="categories-list">
-      <p>Найдено {{ total_all }} публикаций.</p>
-      <ul class="category-links">
-        {% for cat in categories %}
-        <li class="category-item {% if cat.key == category %}category-active{% endif %}">
-          {% if cat.key == category %}
-            <strong>{{ cat.name }}</strong>
-            <span class="category-count">({{ cat.count }})</span>
-            <a href="{{ url_for('main.author', authority_id=author.id) }}" class="category-close">✕</a>
-          {% else %}
-            <a href="?category={{ cat.key }}{% if sort %}&sort={{ sort }}{% endif %}">
-              {{ cat.name }}
-            </a>
-            <span class="category-count">({{ cat.count }})</span>
-          {% endif %}
-        </li>
-        {% endfor %}
-      </ul>
-    </div>
-    {% endif %}
+    {{ paginator() }}
 
-    {# -------- Список публикаций (отображается, если выбрана категория или группировка отключена) -------- #}
-    {% if category or not grouped %}
-      
-      {{ paginator() }}
+    <ul class="publication-list">
+      {% for pub in publications %}
+      <li class="publication-item">
+        <a href="{{ url_for('main.publication', publication_id=pub.id) }}"
+           class="publication-title">
+          {% if pub.header %}{{ pub.header }}: {% endif %}
+          {% if pub.cite %}{{ pub.cite }}{% endif %}
+        </a>
+      </li>
+      {% else %}
+      <li class="empty-note">Публикации не найдены.</li>
+      {% endfor %}
+    </ul>
 
-      <ul class="publication-list">
-        {% for pub in publications %}
-        <li class="publication-item">
-          <!--a href="{{ url_for('main.publication', publication_id=pub.id) }}"
-             class="publication-title">
-            {{ pub.title }}{% if pub.subtitle %}: {{ pub.subtitle }}{% endif %}
-          </a-->
-          <a href="{{ url_for('main.publication', publication_id=pub.id) }}"
-             class="publication-title">
-            {% if pub.header %}{{ pub.header }}: {% endif %}
-            {% if pub.cite %}{{ pub.cite }}{% endif %}
-          </a>
-
-          <!--div class="publication-meta">
-            {% if pub.authors %}
-            {% for a in pub.authors %}
-            {% if a.authority_id %}
-            <a href="{{ url_for('main.author', authority_id=a.authority_id) }}">{{ a.name }}</a>
-            {% else %}
-            <span>{{ a.name }}</span>
-            {% endif %}
-            {% if not loop.last %}, {% endif %}
-            {% endfor %}
-            {% endif %}
-            {% if pub.year %}<span class="meta-year">{{ pub.year }}</span>{% endif %}
-          </div-->
-        </li>
-        {% else %}
-        <li class="empty-note">Публикации не найдены.</li>
-        {% endfor %}
-      </ul>
-
-      {# Пагинатор внизу убран, чтобы строго соответствовать требованию "всегда только один раз". 
-         Если он всё же нужен и в нижней части списка, просто раскомментируйте строку ниже: #}
-      {# {{ paginator() }} #}
-      
-    {% endif %}
+    {{ paginator() }}
 
   </section>
 
-    <section class="about-section">
-        <h2 class="section-title">Публикации об авторе</h2>
-        <ul class="publication-list">
-            {% for pub in about %}
-                <li class="publication-item">
-                    <a href="{{ url_for('main.publication', publication_id=pub.id) }}" class="publication-title">
-                        {{ pub.title }}{% if pub.subtitle %}: {{ pub.subtitle }}{% endif %}
+      <aside class="facets-section">
+        <h2 class="section-title">Категории</h2>
+        <ul class="facet-list">
+            {% for cat in categories %}
+            <li class="facet-item {% if cat.key == category or (not category and cat.key == 'all') %}facet-active{% endif %}">
+                {% if cat.key == category or (not category and cat.key == 'all') %}
+                    <strong>{{ cat.name }}</strong>
+                    {% if cat.count %}<span class="facet-count">({{ cat.count }})</span>{% endif %}
+                {% else %}
+                    <a href="?category={{ cat.key }}{% if sort %}&sort={{ sort }}{% endif %}"
+                       class="facet-link">
+                        {{ cat.name }}
                     </a>
-                    <div class="publication-meta">
-                        {% if pub.year %}<span class="meta-year">{{ pub.year }}</span>{% endif %}
-                    </div>
-                </li>
-            {% else %}
-                <li class="empty-note">Публикаций об авторе не найдено.</li>
+                    {% if cat.count %}<span class="facet-count">({{ cat.count }})</span>{% endif %}
+                {% endif %}
+            </li>
             {% endfor %}
         </ul>
-    </section>
+    </aside>
 
 </div>
 

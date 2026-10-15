@@ -117,13 +117,11 @@ def author(authority_id):
     # --- Получаем общее количество публикаций (учитывая все ID) ---
     total_all = stubs.get_publications_count_by_author_code(all_author_ids)
 
-    # --- Определяем, нужно ли группировать по категориям ---
+
+    # --- Собираем фасеты (категории) ---
     categories = []
-    grouped = total_all > models.GROUPING_THRESHOLD
-    
-    if grouped:
+    if total_all > 0:
         for content_type_key, content_type_name in models.CONTENT_TYPES.items():
-            # Подсчет по категориям теперь тоже учитывает все alternative_names
             count = stubs.get_publications_count_by_content_type(all_author_ids, content_type_key)
             if count > 0:
                 categories.append({
@@ -132,11 +130,22 @@ def author(authority_id):
                     'count': count,
                 })
 
-    # --- Запрос публикаций ---
+    # --- Считаем публикации об авторе для фасета ---
+    about_count = stubs.get_publications_about_author_count(all_author_ids)
+
+    # --- Запрос публикаций (всегда) ---
     publications = []
     total = 0
-    if grouped and category:
-        # Показываем публикации только выбранной категории
+
+    if category == 'about':
+        # Публикации об авторе с пагинацией
+        total, publications = stubs.get_publications_about_author(
+            all_author_ids,
+            page=page,
+            per_page=per_page,
+        )
+    elif category and category in models.CONTENT_TYPES:
+        # Публикации автора выбранной категории
         total, publications = stubs.get_publications_by_author_code(
             all_author_ids,
             page=page,
@@ -144,19 +153,29 @@ def author(authority_id):
             sort=direction,
             content_type=category,
         )
-    elif not grouped:
-        # Показываем все публикации без группировки
+    else:
+        # Все публикации автора (по умолчанию или category='all')
         total, publications = stubs.get_publications_by_author_code(
             all_author_ids,
             page=page,
             per_page=per_page,
             sort=direction,
         )
+        if total == 0:
+            total = total_all
 
-    # Публикации об авторе. 
-    # Передаем весь список all_author_ids. Обновленная функция в sru_client.py 
-    # сама проверит наличие code_035 у любого из этих ID и выполнит объединенный запрос.
-    about = stubs.get_publications_about_author(all_author_ids)
+    # --- Добавляем специальные фасеты ---
+    categories.insert(0, {
+        'key': 'all',
+        'name': 'Все',
+        'count': None,
+    })
+    if about_count > 0:
+        categories.append({
+            'key': 'about',
+            'name': 'Об авторе',
+            'count': about_count,
+        })
 
     # --- Построение диапазонов для пагинатора ---
     total_pages = max(1, (total + per_page - 1) // per_page)
@@ -175,12 +194,11 @@ def author(authority_id):
         "author.html",
         author=author_obj,
         publications=publications,
-        about=about,
         sort=sort,
         category=category,
         categories=categories,
-        grouped=grouped,
         total_all=total_all,
+        about_count=about_count,
         pagination={
             'current': page,
             'total': total,

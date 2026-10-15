@@ -171,6 +171,11 @@
 	      <xsl:value-of select="."/>
       </z:index>
     </xsl:for-each>
+    <xsl:for-each select="marc:datafield[@tag='600']/marc:subfield[@code='3']">
+      <z:index name="Authority-about-code:w Authority-about-code:s">
+	      <xsl:value-of select="."/>
+      </z:index>
+    </xsl:for-each>
   </xsl:template>
 
   <xsl:template name="AuthorityAuthorCode">
