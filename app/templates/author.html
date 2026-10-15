@@ -160,11 +160,17 @@
       <ul class="publication-list">
         {% for pub in publications %}
         <li class="publication-item">
-          <a href="{{ url_for('main.publication', publication_id=pub.id) }}"
+          <!--a href="{{ url_for('main.publication', publication_id=pub.id) }}"
              class="publication-title">
             {{ pub.title }}{% if pub.subtitle %}: {{ pub.subtitle }}{% endif %}
+          </a-->
+          <a href="{{ url_for('main.publication', publication_id=pub.id) }}"
+             class="publication-title">
+            {% if pub.header %}{{ pub.header }}: {% endif %}
+            {% if pub.cite %}{{ pub.cite }}{% endif %}
           </a>
-          <div class="publication-meta">
+
+          <!--div class="publication-meta">
             {% if pub.authors %}
             {% for a in pub.authors %}
             {% if a.authority_id %}
@@ -176,7 +182,7 @@
             {% endfor %}
             {% endif %}
             {% if pub.year %}<span class="meta-year">{{ pub.year }}</span>{% endif %}
-          </div>
+          </div-->
         </li>
         {% else %}
         <li class="empty-note">Публикации не найдены.</li>

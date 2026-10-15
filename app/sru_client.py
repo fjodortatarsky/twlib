@@ -17,6 +17,8 @@ import requests
 
 from . import parsers
 
+from .marc import MarcBibFormatter
+
 import concurrent.futures
 
 logger = logging.getLogger(__name__)
@@ -158,6 +160,25 @@ def get_authors_by_letter(letter: str) -> list | None:
     total, records = result
     return [parsers.parse_author_record(r) for r in records]
 
+def _enrich_publications(publications: list, xml_records: list) -> list:
+    """Обогащает объекты публикаций полями cite и header на основе MARCXML."""
+    for pub, xml_rec in zip(publications, xml_records):
+        try:
+            # Передаем сам XML-элемент записи в форматтер
+            formatter = MarcBibFormatter(xml_rec)
+            fmt_data = formatter.process_response()
+            if fmt_data:
+                fmt = fmt_data[0]
+                # Поддержка как словарей, так и объектов (dataclass/NamedTuple)
+                if isinstance(pub, dict):
+                    pub['cite'] = fmt.get('cite', '')
+                    pub['header'] = fmt.get('header', '')
+                else:
+                    setattr(pub, 'cite', fmt.get('cite', ''))
+                    setattr(pub, 'header', fmt.get('header', ''))
+        except Exception as e:
+            logger.warning('Ошибка форматирования MARCXML: %s', e)
+    return publications
 
 # ---------------------------------------------------------------------------
 # Автор
@@ -218,7 +239,7 @@ def get_publications_by_author_code(
         return 0, []
     total, records = result
     publications = [parsers.parse_publication_record(r) for r in records]
-    return total, publications
+    return total, _enrich_publications(publications, records)
 
 
 def get_publications_count_by_author_code(code_001: str | list[str]) -> int:
@@ -285,7 +306,8 @@ def get_publications_about_author(author_id: str | list[str]) -> list:
     if result is None:
         return []
     total, records = result
-    return [parsers.parse_publication_record(r) for r in records]
+    publications = [parsers.parse_publication_record(r) for r in records]
+    return _enrich_publications(publications, records)
 
 # ---------------------------------------------------------------------------
 # Публикация
@@ -367,9 +389,10 @@ def get_publications_by_department(department_id: str) -> tuple[int, list]:
     result = bibliographic.search_retrieve(query, maximum_records=DEFAULT_MAX_RECORDS)
     if result is None:
         return 0, []
+        # ...
     total, records = result
     publications = [parsers.parse_publication_record(r) for r in records]
-    return total, publications
+    return total, _enrich_publications(publications, records)
 
 
 # ---------------------------------------------------------------------------
@@ -406,7 +429,7 @@ def search_publications(query: str, attr: str) -> tuple[int, list]:
         return 0, []
     total, records = result
     publications = [parsers.parse_publication_record(r) for r in records]
-    return total, publications
+    return total, _enrich_publications(publications, records)
 
 # ---------------------------------------------------------------------------
 # Поиск
@@ -439,4 +462,8 @@ def search_entities(query: str, attr: str) -> tuple[int, list]:
     total, records = result
     # Применяем нужный парсер к каждой записи
     entities = [parser(r) for r in records]
+
+    if parser == parsers.parse_publication_record:
+        entities = _enrich_publications(entities, records)
     return total, entities
+
