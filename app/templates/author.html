@@ -135,7 +135,7 @@
       <li class="publication-item">
         <a href="{{ url_for('main.publication', publication_id=pub.id) }}"
            class="publication-title">
-          {% if pub.header %}{{ pub.header }}: {% endif %}
+          <!-- {% if pub.header %}{{ pub.header }}: {% endif %} -->
           {% if pub.cite %}{{ pub.cite }}{% endif %}
         </a>
       </li>

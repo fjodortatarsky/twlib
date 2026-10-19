@@ -210,15 +210,31 @@ class MarcBibFormatter:
             if g := self.get_subfield(rec, '461', 'g'): parts.append(f" ; {g}")
         return "".join(parts)
 
+
     def domain3(self, rec: ET._Element) -> str:
         parts = []
         if self.is_patent(rec):
             if a := self.get_subfield(rec, '317', 'a'): parts.append(a)
         elif self.is_monograph(rec):
-            if a1 := self.get_subfield_by_index(rec, '210', 'a', 0): parts.append(a1)
-            if a2 := self.get_subfield_by_index(rec, '210', 'a', 1): parts.append(f" : {a2}")
-            if c := self.get_subfield(rec, '210', 'c'): parts.append(f" : {c}")
-            if d := self.get_subfield(rec, '210', 'd'): parts.append(f", {d}")
+            a1 = self.get_subfield_by_index(rec, '210', 'a', 0)
+            a2 = self.get_subfield_by_index(rec, '210', 'a', 1)
+            c = self.get_subfield(rec, '210', 'c')
+            d = self.get_subfield(rec, '210', 'd')
+            
+            if a1:
+                parts.append(a1)
+            if a2 and a2 != a1:
+                parts.append(f" : {a2}")
+            if c:
+                parts.append(f" : {c}")
+                
+            if d:
+                # Исправление: добавляем запятую только если уже есть место издания или издательство
+                if parts:
+                    parts.append(f", {d}")
+                else:
+                    parts.append(d)
+                    
         elif self.is_multilevel_volume(rec):
             if e := self.get_subfield(rec, '461', 'e'): parts.append(e)
         return "".join(parts)
@@ -230,9 +246,19 @@ class MarcBibFormatter:
             if c := self.get_subfield(rec, '215', 'c'): parts.append(f" : {c}")
             if e := self.get_subfield(rec, '215', 'e'): parts.append(f" + {e}")
         elif self.is_multilevel_volume(rec):
-            if c := self.get_subfield(rec, '461', 'c'): parts.append(c)
-            if n := self.get_subfield(rec, '461', 'n'): parts.append(f" : {n}")
-            if d := self.get_subfield(rec, '210', 'd'): parts.append(f", {d}")
+            c = self.get_subfield(rec, '461', 'c')
+            n = self.get_subfield(rec, '461', 'n')
+            d = self.get_subfield(rec, '210', 'd')
+            
+            if c: parts.append(c)
+            if n: parts.append(f" : {n}")
+            
+            if d:
+                # То же исправление для многотомных изданий
+                if parts:
+                    parts.append(f", {d}")
+                else:
+                    parts.append(d)
         return "".join(parts)
 
     def domain5(self, rec: ET._Element) -> str:
@@ -335,6 +361,8 @@ class MarcBibFormatter:
             
         valid_domains = [d for d in domains if d]
         if valid_domains:
+            if content:
+                content += ". — "
             content += ". — ".join(valid_domains)
             
         # Реализация шаблона dedot
