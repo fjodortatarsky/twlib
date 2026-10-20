@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Фототека{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="site-header">
+  <div class="shell header-inner">
+    <a class="brand" href="{{ url_for('index') }}">
+      <span class="brand-mark" aria-hidden="true">◈</span> Фототека
+    </a>
+    <nav class="nav" aria-label="Основная навигация">
+      <a href="{{ url_for('index') }}">Все картинки</a>
+      {% if current_user() %}
+        <a href="{{ url_for('upload') }}">Загрузить</a>
+        <span class="nav-user">{{ current_user() }}</span>
+        <form class="inline-form" method="post" action="{{ url_for('logout') }}">
+          <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+          <button class="link-button" type="submit">Выйти</button>
+        </form>
+      {% else %}
+        <a href="{{ url_for('login') }}">Войти</a>
+      {% endif %}
+    </nav>
+  </div>
+</header>
+
+<main class="page">
+  {% for category, message in get_flashed_messages(with_categories=true) %}
+    <div class="flash flash-{{ category }}" role="status">{{ message }}</div>
+  {% endfor %}
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+  <div class="shell">Фототека · Flask · файловое хранилище · JPEG</div>
+</footer>
+</body>
+</html>

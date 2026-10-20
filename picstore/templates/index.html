@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Фототека — все картинки{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Все картинки</h1>
+    <p class="lede">Изображения и их описания в одном месте.</p>
+  </div>
+  {% if current_user() %}
+    <a class="btn" href="{{ url_for('upload') }}">＋ Загрузить</a>
+  {% endif %}
+</div>
+
+{% if pictures %}
+  <div class="grid">
+    {% for p in pictures %}
+      <a class="card" href="{{ url_for('picture_view', picture_id=p.authorityid) }}">
+        <div class="thumb">
+          <img src="{{ url_for('picture_image', picture_id=p.authorityid) }}"
+               alt="{{ p.title }}" loading="lazy">
+        </div>
+        <div class="card-body">
+          <h3 class="card-title">{{ p.title }}</h3>
+          <p class="card-desc">{{ p.description or 'Без описания' }}</p>
+          <div class="card-meta">
+            <span class="mono">{{ p.authorityid }}</span>
+            <span>{{ p.created_at[:10] }}</span>
+          </div>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="empty">
+    <h2>Полки пока пустые</h2>
+    <p>Загрузите первую картинку — она появится здесь.</p>
+    {% if current_user() %}
+      <a class="btn" href="{{ url_for('upload') }}">Загрузить картинку</a>
+    {% else %}
+      <a class="btn" href="{{ url_for('login') }}">Войти</a>
+    {% endif %}
+  </div>
+{% endif %}
+{% endblock %}

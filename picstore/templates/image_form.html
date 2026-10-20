@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Загрузка картинки' if mode == 'create' else 'Редактирование картинки' }}{% endblock %}
+
+{% block content %}
+<div class="crumbs">
+  <a href="{{ url_for('index') }}">Все картинки</a> /
+  {% if mode == 'edit' %}
+    <a href="{{ url_for('picture_view', picture_id=authorityid) }}">карточка</a> / редактирование
+  {% else %}
+    загрузка
+  {% endif %}
+</div>
+
+<div class="form-wrap">
+  <section class="panel panel--framed">
+    <h1>{{ 'Загрузка картинки' if mode == 'create' else 'Редактирование картинки' }}</h1>
+    <p class="lede">
+      {% if mode == 'create' %}
+        Дайте картинке имя и немного контекста.
+      {% else %}
+        Правьте название и описание. Изображение можно заменить отдельно.
+      {% endif %}
+    </p>
+
+    {% if error %}
+      <div class="error-box" role="alert">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data"
+          action="{{ url_for('picture_edit', picture_id=authorityid) if mode == 'edit' else url_for('upload') }}">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+
+      <div class="field">
+        <label for="authorityid">
+          Идентификатор источника (authorityid) <span class="required">*</span>
+        </label>
+        <input id="authorityid" name="authorityid" type="text" required
+               maxlength="64" pattern="[A-Za-z0-9._-]+"
+               value="{{ authorityid }}"
+               {% if mode == 'edit' or authorityid %}readonly{% endif %}
+               placeholder="например, REC-12345">
+        <p class="hint">
+          Передаётся из электронного каталога в параметре
+          <code>authorityid</code>. Допустимы буквы, цифры, точка, подчёркивание
+          и дефис, до 64 символов.
+        </p>
+      </div>
+
+      <div class="field">
+        <label for="title">Название <span class="required">*</span></label>
+        <input id="title" name="title" type="text" required
+               maxlength="{{ config.MAX_TITLE_LENGTH }}"
+               value="{{ form.title }}" placeholder="Например: Старая читалка">
+      </div>
+
+      <div class="field">
+        <label for="description">Описание</label>
+        <textarea id="description" name="description" rows="6"
+                  maxlength="{{ config.MAX_DESCRIPTION_LENGTH }}"
+                  placeholder="Что изображено, где и когда снято…">{{ form.description }}</textarea>
+        <p class="hint">Обычный текст. Переносы строк сохраняются.</p>
+      </div>
+
+      <div class="field">
+        <label for="file">
+          {{ 'Файл изображения' if mode == 'create' else 'Заменить изображение' }}
+          {% if mode == 'create' %}<span class="required">*</span>{% endif %}
+        </label>
+        <input id="file" name="file" type="file"
+               accept="image/jpeg,image/png,image/webp,image/bmp,image/tiff"
+               {% if mode == 'create' %}required{% endif %}>
+        <p class="hint">
+          JPG, PNG, WebP, BMP, TIFF · до {{ config.MAX_CONTENT_LENGTH // 1024 // 1024 }} МБ.
+          Файл будет пересохранён в JPEG и вписан в
+          {{ config.MAX_IMAGE_SIZE[0] }} × {{ config.MAX_IMAGE_SIZE[1] }} px
+          с сохранением пропорций.
+        </p>
+      </div>
+
+      {% if mode == 'edit' %}
+        <div class="notice">Если файл не выбран, изображение останется прежним.</div>
+      {% endif %}
+
+      <div class="toolbar">
+        <button class="btn" type="submit">
+          {{ 'Загрузить' if mode == 'create' else 'Сохранить' }}
+        </button>
+        <a class="btn btn-secondary" href="{{ url_for('index') }}">Отмена</a>
+      </div>
+    </form>
+  </section>
+</div>
+{% endblock %}

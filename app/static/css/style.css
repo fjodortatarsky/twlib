@@ -346,7 +346,7 @@ a.letter-link:hover {
 
 .author-photo {
     width: 180px;
-    height: 220px;
+/*    height: 220px; */
     object-fit: cover;
     border: 1px solid var(--border-strong);
     filter: sepia(0.15);
@@ -636,4 +636,48 @@ a.letter-link:hover {
     .publication-details dt {
         margin-top: 0.4rem;
     }
+}
+
+.image-slot {
+  position: relative;
+  width: 100%;
+  /*aspect-ratio: 4 / 3;*/
+  background: var(--bg-panel-alt, #f0e9dc);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.image-slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Когда картинка сломана — показываем фоллбек */
+.image-slot[data-state="broken"] .image-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: 100%;
+  padding: 16px;
+  text-align: center;
+}
+
+.image-fallback .placeholder-icon {
+  font-size: 2rem;
+  opacity: 0.4;
+}
+
+.image-fallback .placeholder-text {
+  margin: 0;
+  color: var(--ink-faint, #9a8a72);
+  font-size: 0.85rem;
+}
+
+.btn-sm {
+  padding: 6px 14px;
+  font-size: 0.85rem;
 }

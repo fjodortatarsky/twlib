@@ -10,7 +10,33 @@
 
 <section class="author-header">
 
-    <div class="author-photo-wrap">
+  {# macros/image_with_upload.html #}
+
+    {% macro image_with_upload(authorityid, title, picture_base_url, upload_base_url) %}
+    <div class="image-slot"
+         data-authorityid="{{ authorityid }}"
+         data-upload-url="{{ upload_base_url }}/upload?authorityid={{ authorityid }}">
+
+      {# Основной тег с картинкой #}
+      <img src="{{ picture_base_url }}/pictures/{{ authorityid }}/image.jpg"
+           alt="{{ title }}"
+           class="author-photo"
+           loading="lazy"
+           onerror="this.closest('.image-slot').dataset.state = 'broken'; this.remove();">
+
+      {# Блок-заглушка с кнопкой загрузки. Изначально скрыт. #}
+      <div class="image-fallback" hidden>
+        <div class="placeholder-icon">🖼️</div>
+        <p class="placeholder-text">Картинка не загружена</p>
+        <a class="btn btn-primary btn-sm"
+           href="{{ upload_base_url }}/upload?authorityid={{ authorityid }}">
+          Загрузить картинку
+        </a>
+      </div>
+    </div>
+    {% endmacro %}
+
+    <!--div class="author-photo-wrap">
         {% if author.photo_url %}
             <img src="{{ author.photo_url }}" alt="Фото {{ author.main_name_full }}" class="author-photo">
         {% else %}
@@ -18,6 +44,14 @@
                 {{ (author.main_name_full or author.main_name or '?')[0] }}
             </div>
         {% endif %}
+    </div-->
+    <div class="author-photo-wrap">
+        {{ image_with_upload(
+          authorityid=author.id,
+          title=author.main_name,
+          picture_base_url='http://109.123.168.74:5001',
+          upload_base_url='http://109.123.168.74:5001'
+        ) }}
     </div>
 
     <div class="author-info">

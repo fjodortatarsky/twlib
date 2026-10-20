@@ -5,7 +5,7 @@
 SRU-клиента из ``sru_client.py`` без изменения самих роутов.
 """
 
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request, jsonify
 
 #from . import stubs
 from . import sru_client as stubs
@@ -79,8 +79,35 @@ def author_index(letter):
     )
 
 # ---------------------------------------------------------------------------
-# Автор
+# Связанные авторы
 # ---------------------------------------------------------------------------
+@bp.route("/linkedauthors/<authority_id>")
+def linkedauthors(authority_id):
+    """Возвращает JSON с ID автора и всех его альтернативных (связанных) записей."""
+    # 1. Делаем ровно один сетевой запрос к SRU (внутри stubs.get_author)
+    author_obj = stubs.get_author(authority_id)
+    if not author_obj:
+        return jsonify({"error": "Автор не найден"}), 404
+
+    # 2. Собираем основной ID
+    all_author_ids = [author_obj.id]
+    
+    # 3. Добавляем ID из связанных записей (поле 500 $9 / $3)
+    if author_obj.alternative_names:
+        alt_ids = [
+            alt['id'] for alt in author_obj.alternative_names 
+            if alt.get('id')
+        ]
+        all_author_ids.extend(alt_ids)
+        
+    # 4. Удаляем возможные дубликаты, сохраняя порядок (основной ID останется первым)
+    all_author_ids = list(dict.fromkeys(all_author_ids))
+
+    # 5. Возвращаем легковесный JSON
+    return jsonify({
+        "authority_id": authority_id,
+        "author_ids": all_author_ids
+    })
 
 # ---------------------------------------------------------------------------
 # Автор

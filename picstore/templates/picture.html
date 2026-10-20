@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}{{ picture.title }} — Фототека{% endblock %}
+
+{% block content %}
+<div class="crumbs">
+  <a href="{{ url_for('index') }}">Все картинки</a> / карточка
+</div>
+
+<div class="page-head">
+  <div>
+    <h1>{{ picture.title }}</h1>
+    <p class="lede mono">authorityid: {{ picture.authorityid }}</p>
+  </div>
+  <div class="toolbar">
+    {% if current_user() %}
+      <a class="btn" href="{{ url_for('picture_edit', picture_id=picture.authorityid) }}">Редактировать</a>
+    {% endif %}
+    <a class="btn btn-secondary"
+       href="{{ url_for('picture_image', picture_id=picture.authorityid) }}"
+       target="_blank" rel="noopener">Открыть JPEG ↗</a>
+  </div>
+</div>
+
+<div class="picture-layout">
+  <figure class="image-frame">
+    <img src="{{ url_for('picture_image', picture_id=picture.authorityid) }}" alt="{{ picture.title }}">
+    <figcaption class="hint">
+      {{ picture.width }} × {{ picture.height }} px · JPEG
+    </figcaption>
+  </figure>
+
+  <section class="panel">
+    <h2>Описание</h2>
+    {% if picture.description %}
+      <div class="description">{{ picture.description }}</div>
+    {% else %}
+      <p class="muted">Описание не заполнено.</p>
+    {% endif %}
+
+    <div class="authority-back">
+      <a class="back-link" href="{{ authority_url(picture.authorityid) }}" rel="noopener">
+        ← вернуться в электронный каталог
+      </a>
+      <p class="hint">
+        Страница автора:
+        <span class="mono">{{ authority_url(picture.authorityid) }}</span>
+      </p>
+    </div>
+
+    <dl class="meta-list">
+      <div><dt>Идентификатор</dt><dd class="mono">{{ picture.authorityid }}</dd></div>
+      <div><dt>Создана</dt><dd>{{ picture.created_at | fmt_date }}</dd></div>
+      <div><dt>Изменена</dt><dd>{{ picture.updated_at | fmt_date }}</dd></div>
+      <div><dt>Размер</dt><dd>{{ picture.width }} × {{ picture.height }} px</dd></div>
+      <div><dt>MIME</dt><dd class="mono">image/jpeg</dd></div>
+      <div><dt>Исходный файл</dt><dd class="mono">{{ picture.original_filename }}</dd></div>
+    </dl>
+
+    {% if not current_user() %}
+      <p class="hint">
+        Редактирование доступно после
+        <a href="{{ url_for('login', next=url_for('picture_view', picture_id=picture.authorityid)) }}">входа</a>.
+      </p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
