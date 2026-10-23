@@ -10,6 +10,7 @@ from flask import Blueprint, render_template, request, jsonify
 #from . import stubs
 from . import sru_client as stubs
 from . import models
+from .config import Config
 
 
 bp = Blueprint("main", __name__)
@@ -259,7 +260,7 @@ def publication(publication_id):
     pub = stubs.get_publication(publication_id)
     if not pub:
         return render_template("error.html", message="Публикация не найдена"), 404
-    return render_template("publication.html", publication=pub)
+    return render_template("publication.html", publication=pub, koha_url=Config.KOHA_URL_PREFIX)
 
 
 # ---------------------------------------------------------------------------

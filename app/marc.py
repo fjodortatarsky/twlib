@@ -361,7 +361,7 @@ class MarcBibFormatter:
             
         valid_domains = [d for d in domains if d]
         if valid_domains:
-            if content:
+            if content and not(self.is_analytics(rec)) and not(self.is_multilevel_volume(rec)):
                 content += ". — "
             content += ". — ".join(valid_domains)
             

@@ -362,7 +362,8 @@ def get_publication(publication_id: str):
     total, records = result
     if not records:
         return None
-    return parsers.parse_publication_record(records[0])
+    publications = [parsers.parse_publication_record(r) for r in records]
+    return _enrich_publications(publications, records)[0]
 
 
 # ---------------------------------------------------------------------------
