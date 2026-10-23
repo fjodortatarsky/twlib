@@ -123,11 +123,27 @@ def author(authority_id):
 
     # --- Собираем все ID автора (основной + альтернативные) ---
     all_author_ids = [author_obj.id]
+
     if author_obj.alternative_names:
         all_author_ids.extend([
             alt['id'] for alt in author_obj.alternative_names if alt.get('id')
         ])
-    # Удаляем возможные дубликаты, сохраняя порядок
+
+    # Добавляем идентификаторы из codes_035 (поле может быть строкой, списком или None)
+    codes_035 = getattr(author_obj, "codes_035", None)
+    if codes_035:
+        if isinstance(codes_035, str):
+            # если это строка с разделителями — например "123;456" или "123,456"
+            # при необходимости поменяйте разделитель
+            import re
+            all_author_ids.extend(re.split(r"[;,]\s*", codes_035))
+        elif isinstance(codes_035, (list, tuple, set)):
+            all_author_ids.extend(codes_035)
+        else:
+            all_author_ids.append(str(codes_035))
+
+    # Удаляем пустые значения и возможные дубликаты, сохраняя порядок
+    all_author_ids = [aid for aid in all_author_ids if aid]
     all_author_ids = list(dict.fromkeys(all_author_ids))
 
     # --- Параметры пагинации и сортировки ---

@@ -29,7 +29,7 @@
         <div class="placeholder-icon">🖼️</div>
         <p class="placeholder-text">Картинка не загружена</p>
         <a class="btn btn-primary btn-sm"
-           href="{{ upload_base_url }}/upload?authorityid={{ authorityid }}">
+           href="{{ upload_base_url }}/upload?authorityid={{ authorityid }}&name={{ title }}">
           Загрузить картинку
         </a>
       </div>
@@ -119,22 +119,56 @@
   <section class="publications-section">
 
     {# -------- Макрос пагинатора -------- #}
-    {% macro paginator() %}
-    {% if pagination and pagination.ranges|length > 1 %}
-    <nav class="paginator">
-      {% for r in pagination.ranges %}
+{% macro paginator() %}
+{% if pagination is defined and pagination and pagination.ranges is defined and pagination.ranges %}
+  {% set ranges = pagination.ranges|list %}
+
+  {% if ranges|length > 1 %}
+    {# Сколько соседей активного блока показывать: 1 = слева и справа по одному #}
+    {% set window = 1 %}
+
+    {# Когда сворачивать пагинацию.
+       Сейчас: если блоков больше 7, показываем сокращённый вид.
+       Если нужно всегда сворачивать, поставьте:
+       {% set collapse = true %}
+    #}
+    {% set collapse = ranges|length > 7 %}
+
+    {% set ns = namespace(current=1, last=0) %}
+
+    {# Ищем индекс активного блока #}
+    {% for r in ranges %}
       {% if r.current %}
-      <span class="page-current">{{ r.label }}</span>
-      {% else %}
-      <a href="?page={{ r.page }}{% if sort %}&sort={{ sort }}{% endif %}{% if category %}&category={{ category }}{% endif %}"
-         class="page-link">{{ r.label }}</a>
+        {% set ns.current = loop.index %}
       {% endif %}
+    {% endfor %}
+
+    <nav class="paginator">
+      {% for r in ranges %}
+        {% set near_current = loop.index >= ns.current - window and loop.index <= ns.current + window %}
+        {% set visible = (not collapse) or loop.first or loop.last or near_current %}
+
+        {% if visible %}
+          {% if collapse and ns.last and loop.index > ns.last + 1 %}
+            <span class="page-ellipsis">…</span>
+          {% endif %}
+
+          {% if r.current %}
+            <span class="page-current">{{ r.label }}</span>
+          {% else %}
+            <a href="?page={{ r.page }}{% if sort is defined and sort %}&sort={{ sort }}{% endif %}{% if category is defined and category %}&category={{ category }}{% endif %}"
+               class="page-link">{{ r.label }}</a>
+          {% endif %}
+
+          {% set ns.last = loop.index %}
+        {% endif %}
       {% endfor %}
+
       <span class="page-total">из {{ pagination.total }}</span>
     </nav>
-    {% endif %}
-    {% endmacro %}
-
+  {% endif %}
+{% endif %}
+{% endmacro %}
 
         {# -------- Единая шапка секции -------- #}
     <div class="section-header">
@@ -162,7 +196,9 @@
       </div>
     </div>
 
-    {{ paginator() }}
+    <div>
+      Всего записей: {{ pagination.total }} 
+    </div>
 
     <ul class="publication-list">
       {% for pub in publications %}

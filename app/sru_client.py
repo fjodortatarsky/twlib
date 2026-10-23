@@ -208,10 +208,13 @@ def _build_author_ccl_query(ids: list[str], sort_attr: str, content_type: str | 
     for i in range(1, len(ids)):
         id_query = f"@or {id_query} @attr 1=Authority-author-code {ids[i]}"
         
+    res = ""
     if content_type:
-        return f"@or @and {id_query} @attr 1=Content-type {content_type} @attr 7={sort_attr} @attr 1=31 0"
+        res = f"@or @and {id_query} @attr 1=Content-type {content_type} @attr 7={sort_attr} @attr 1=31 0"
     else:
-        return f"@or {id_query} @attr 7={sort_attr} @attr 1=31 0"
+        res = f"@or {id_query} @attr 7={sort_attr} @attr 1=31 0"
+    print(f"DEBUG: {res}")
+    return res
 
 def get_publications_by_author_code(
     code_001: str | list[str],

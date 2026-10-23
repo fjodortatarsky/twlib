@@ -119,6 +119,8 @@ def picture_image(picture_id):
 def upload():
     if request.method == "GET":
         authorityid = request.args.get("authorityid", "").strip()
+        name = request.args.get("name", "").strip()  # Новый параметр
+
         if authorityid:
             if not storage.valid_authorityid(authorityid):
                 flash("Некорректный идентификатор источника.", "error")
@@ -131,9 +133,11 @@ def upload():
                     "info",
                 )
                 return redirect(url_for("picture_edit", picture_id=existing.authorityid))
-        return _form("create", authorityid=authorityid)
 
-    # POST
+        # Передаём name как prefill для title
+        return _form("create", authorityid=authorityid, title=name)
+
+    # POST остаётся без изменений
     authorityid = request.form.get("authorityid", "").strip()
     title = request.form.get("title", "").strip()
     description = request.form.get("description", "").strip()
@@ -186,7 +190,6 @@ def upload():
 
     flash("Картинка загружена.", "success")
     return redirect(url_for("picture_view", picture_id=record.authorityid))
-
 
 @app.route("/pictures/<picture_id>/edit", methods=["GET", "POST"])
 @auth.login_required

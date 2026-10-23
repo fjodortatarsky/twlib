@@ -89,6 +89,13 @@ def _parse_years_range(years_str):
     return birth, death
 
 
+_ID_STRIP_TABLE = str.maketrans('', '', '()\\')
+
+def _normalize_id(value: str) -> str:
+    if value is None:
+        return None
+    return value.translate(_ID_STRIP_TABLE)
+
 # ---------------------------------------------------------------------------
 # Парсинг оболочек (searchRetrieve / scan)
 # ---------------------------------------------------------------------------
@@ -146,12 +153,12 @@ def parse_author_record(record) -> Author:
     - основная форма — из поля 700 (предпочтительно) или 200;
     - альтернативные имена — из полей 500 (параллельные формы).
     """
-    record_id = _get_controlfield(record, '001') or ''
+    record_id = _normalize_id(_get_controlfield(record, '001') or '')
 
     # Коды 035 (может быть несколько; первый — ключ для поиска публикаций)
     codes_035 = []
     for df in _find_datafields(record, '035'):
-        a = _get_first_subfield(df, 'a')
+        a = _normalize_id(_get_first_subfield(df, 'a'))
         if a:
             codes_035.append(a)
 
@@ -178,11 +185,9 @@ def parse_author_record(record) -> Author:
             continue
 
 
-        alt_id = _get_first_subfield(df, '9')  # ← ID связанной авторитетной записи
+        alt_id = _normalize_id(_get_first_subfield(df, '9'))  # ← ID связанной авторитетной записи
         if not alt_id:
-            alt_id = _get_first_subfield(df, '3')
-        if(alt_id):
-          alt_id = alt_id.replace('(', '').replace(')', '').replace(chr(92), '')
+            alt_id = _normalize_id(_get_first_subfield(df, '3'))
 
         alternative_names.append({
             'name': parsed['name'],

@@ -183,7 +183,7 @@
                           marc:datafield[@tag='701']/marc:subfield[@code='3'] |
                           marc:datafield[@tag='702']/marc:subfield[@code='3']">
       <z:index name="Authority-author-code:w Authority-author-code:s">
-	      <xsl:value-of select="substring-after(., '(RuTPU)')"/>
+	      <xsl:value-of select="translate(., '()\', '')"/>
       </z:index>
     </xsl:for-each>
     <xsl:for-each select="marc:datafield[@tag='700']/marc:subfield[@code='9'] |
