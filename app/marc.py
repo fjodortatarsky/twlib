@@ -110,6 +110,17 @@ class MarcBibFormatter:
                 return True
         return False
 
+    def get_bib_type(self, rec: ET._Element) -> str:
+      if self.is_patent(rec):
+        return "patent"
+      if self.is_monograph(rec):
+        return "monograph"
+      if self.is_analytics(rec):
+        return "analytics"
+      if self.is_multilevel_volume(rec):
+        return "analytics"
+      return None
+
     # --- ГЕНЕРАЦИЯ ПОЛЕЙ (DOMAINS) ---
 
     def get_bib_id(self, rec: ET._Element) -> Optional[str]:
@@ -392,7 +403,8 @@ class MarcBibFormatter:
             'subjects': self.get_subjects(rec),
             'cite': self.get_cite(rec),
             'url': self.get_subfield(rec, '856', 'u'),
-            'referat': self.get_subfield(rec, '330', 'a')
+            'referat': self.get_subfield(rec, '330', 'a'),
+            'type': self.get_bib_type(rec)
         }
 
     def process_response(self) -> List[Dict[str, Any]]:

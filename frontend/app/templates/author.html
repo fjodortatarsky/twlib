@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+{% block title %}{{ author.main_name_full or author.main_name }} — Труды учёных ТПУ{% endblock %}
+{% block content %}
+
+<nav class="breadcrumbs">
+    <a href="{{ url_for('main.index') }}">Главная</a>
+    <span class="sep">›</span>
+    <span class="current">{{ author.main_name_full or author.main_name }}</span>
+</nav>
+
+<section class="author-header">
+
+  {# macros/image_with_upload.html #}
+
+    {% macro image_with_upload(authorityid, title, picture_base_url, upload_base_url) %}
+    <div class="image-slot"
+         data-authorityid="{{ authorityid }}"
+         data-upload-url="{{ upload_base_url }}/upload?authorityid={{ authorityid }}">
+
+      {# Основной тег с картинкой #}
+      <img src="{{ picture_base_url }}/pictures/{{ authorityid }}/image.jpg"
+           alt="{{ title }}"
+           class="author-photo"
+           loading="lazy"
+           onerror="this.closest('.image-slot').dataset.state = 'broken'; this.remove();">
+
+      {# Блок-заглушка с кнопкой загрузки. Изначально скрыт. #}
+      <div class="image-fallback" hidden>
+        <div class="placeholder-icon">🖼️</div>
+        <p class="placeholder-text">Картинка не загружена</p>
+        <a class="btn btn-primary btn-sm"
+           href="{{ upload_base_url }}/upload?authorityid={{ authorityid }}&name={{ title }}">
+          Загрузить картинку
+        </a>
+      </div>
+    </div>
+    {% endmacro %}
+
+    <!--div class="author-photo-wrap">
+        {% if author.photo_url %}
+            <img src="{{ author.photo_url }}" alt="Фото {{ author.main_name_full }}" class="author-photo">
+        {% else %}
+            <div class="author-photo-placeholder">
+                {{ (author.main_name_full or author.main_name or '?')[0] }}
+            </div>
+        {% endif %}
+    </div-->
+    <div class="author-photo-wrap">
+        {{ image_with_upload(
+          authorityid=author.id,
+          title=author.main_name,
+          picture_base_url='http://109.123.168.74:5001',
+          upload_base_url='http://109.123.168.74:5001'
+        ) }}
+    </div>
+
+    <div class="author-info">
+        <h1 class="author-name">{{ author.main_name_full or author.main_name }}</h1>
+
+        {% if author.birth_year %}
+            <p class="author-years">
+                {{ author.birth_year }}–{{ author.death_year or 'н. вр.' }}
+            </p>
+        {% endif %}
+
+        {% if author.titles %}
+            <ul class="author-titles">
+                {% for title in author.titles %}
+                    <li>{{ title }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% if author.description and not category %}
+            {% for para in author.description.split('\n\n') %}
+                <p class="author-bio">{{ para }}</p>
+            {% endfor %}
+        {% endif %}
+
+        {% if author.identifiers_017 %}
+            <ul class="author-identifiers">
+                {% for item in author.identifiers_017 %}
+                    <li>{{ item.source }} {{ item.value }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% if author.orcid %}
+            <p class="author-orcid">
+                ORCID: <a href="https://orcid.org/{{ author.orcid }}" target="_blank" rel="noopener">{{ author.orcid }}</a>
+            </p>
+        {% endif %}
+
+        {% if author.alternative_names %}
+           <div class="alternative-names">
+               <h3 class="alt-title">Другие формы имени</h3>
+               <ul>
+                   {% for alt in author.alternative_names %}
+                       <li>
+                           {% if alt.id %}
+                               <a href="{{ url_for('main.author', authority_id=alt.id) }}">
+                                   {{ alt.full or alt.name }}
+                               </a>
+                           {% else %}
+                               {{ alt.full or alt.name }}
+                           {% endif %}
+                           {% if alt.note %}<span class="alt-note">({{ alt.note }})</span>{% endif %}
+                       </li>
+                   {% endfor %}
+               </ul>
+           </div>
+        {% endif %}
+    </div>
+
+</section>
+
+<div class="author-columns">
+
+  <section class="publications-section">
+
+    {# -------- Макрос пагинатора -------- #}
+{% macro paginator() %}
+{% if pagination is defined and pagination and pagination.ranges is defined and pagination.ranges %}
+  {% set ranges = pagination.ranges|list %}
+
+  {% if ranges|length > 1 %}
+    {# Сколько соседей активного блока показывать: 1 = слева и справа по одному #}
+    {% set window = 1 %}
+
+    {# Когда сворачивать пагинацию.
+       Сейчас: если блоков больше 7, показываем сокращённый вид.
+       Если нужно всегда сворачивать, поставьте:
+       {% set collapse = true %}
+    #}
+    {% set collapse = ranges|length > 7 %}
+
+    {% set ns = namespace(current=1, last=0) %}
+
+    {# Ищем индекс активного блока #}
+    {% for r in ranges %}
+      {% if r.current %}
+        {% set ns.current = loop.index %}
+      {% endif %}
+    {% endfor %}
+
+    <nav class="paginator">
+      {% for r in ranges %}
+        {% set near_current = loop.index >= ns.current - window and loop.index <= ns.current + window %}
+        {% set visible = (not collapse) or loop.first or loop.last or near_current %}
+
+        {% if visible %}
+          {% if collapse and ns.last and loop.index > ns.last + 1 %}
+            <span class="page-ellipsis">…</span>
+          {% endif %}
+
+          {% if r.current %}
+            <span class="page-current">{{ r.label }}</span>
+          {% else %}
+            <a href="?page={{ r.page }}{% if sort is defined and sort %}&sort={{ sort }}{% endif %}{% if category is defined and category %}&category={{ category }}{% endif %}"
+               class="page-link">{{ r.label }}</a>
+          {% endif %}
+
+          {% set ns.last = loop.index %}
+        {% endif %}
+      {% endfor %}
+
+      <span class="page-total">из {{ pagination.total }}</span>
+    </nav>
+  {% endif %}
+{% endif %}
+{% endmacro %}
+
+        {# -------- Единая шапка секции -------- #}
+    <div class="section-header">
+      <h2 class="section-title">
+        Публикации автора
+        {% if category and category != 'all' %}
+          {% if category == 'about' %}
+            — Об авторе
+          {% else %}
+            — {{ categories|selectattr('key', 'equalto', category)|map(attribute='name')|first }}
+          {% endif %}
+        {% endif %}
+      </h2>
+      <div class="sort-controls">
+        <span class="sort-label">Сортировка:</span>
+        {% if sort == 'date' %}
+        <span class="sort-current">по дате</span>
+        <a href="?sort=title{% if pagination and pagination.current > 1 %}&page={{ pagination.current }}{% endif %}{% if category %}&category={{ category }}{% endif %}"
+           class="sort-link">по названию</a>
+        {% else %}
+        <a href="?sort=date{% if pagination and pagination.current > 1 %}&page={{ pagination.current }}{% endif %}{% if category %}&category={{ category }}{% endif %}"
+           class="sort-link">по дате</a>
+        <span class="sort-current">по названию</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div>
+      Всего записей: {{ pagination.total }} 
+    </div>
+
+    <ul class="publication-list">
+      {% for pub in publications %}
+      <li class="publication-item">
+        <a href="{{ url_for('main.publication', publication_id=pub.id) }}"
+           class="publication-title">
+          <!-- {% if pub.header %}{{ pub.header }}: {% endif %} -->
+          {% if pub.cite %}{{ pub.cite }}{% endif %}
+        </a>
+      </li>
+      {% else %}
+      <li class="empty-note">Публикации не найдены.</li>
+      {% endfor %}
+    </ul>
+
+    {{ paginator() }}
+
+  </section>
+
+      <aside class="facets-section">
+        <h2 class="section-title">Категории</h2>
+        <ul class="facet-list">
+            {% for cat in categories %}
+            <li class="facet-item {% if cat.key == category or (not category and cat.key == 'all') %}facet-active{% endif %}">
+                {% if cat.key == category or (not category and cat.key == 'all') %}
+                    <strong>{{ cat.name }}</strong>
+                    {% if cat.count %}<span class="facet-count">({{ cat.count }})</span>{% endif %}
+                {% else %}
+                    <a href="?category={{ cat.key }}{% if sort %}&sort={{ sort }}{% endif %}"
+                       class="facet-link">
+                        {{ cat.name }}
+                    </a>
+                    {% if cat.count %}<span class="facet-count">({{ cat.count }})</span>{% endif %}
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </aside>
+
+</div>
+
+{% endblock %}

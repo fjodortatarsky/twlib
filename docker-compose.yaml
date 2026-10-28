@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+
+  zebra-bib:
+    build:
+      context: ./
+      dockerfile: ./zebra/Dockerfile
+    image: twlib/zebra:latest
+    volumes:
+      - ./zebra/biblio:/zebra:rw
+    ports:
+      - "9899:9999" # Маппим порт хоста на порт контейнера
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  zebra-person:
+    build:
+      context: ./
+      dockerfile: ./zebra/Dockerfile
+    image: twlib/zebra:latest
+    volumes:
+      - ./zebra/person:/zebra:rw
+    ports:
+      - "9898:9999" # Маппим порт хоста на порт контейнера
+    networks:
+      - app-network
+    restart: unless-stopped
+  
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ./Dockerfile
+    image: myapp/frontend:latest
+    ports:
+      - "5005:5000" # Маппим порт хоста на порт контейнера
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=production
+      - KOHA_URL_PREFIX=https://koha.lib.tpu.ru/cgi-bin/koha/opac-detail.pl?biblionumber=
+      - BIBLIOGRAPHIC_URL=http://zebra-bib:9999/
+      - AUTHOR_AUTHORITY_URL=http://zebra-person:9999/
+      - DEPARTMENT_AUTHORITY_URL=http://zebra-person:9999/
+    networks:
+      - app-network
+    restart: unless-stopped
+    depends_on:
+      - zebra-bib
+      - zebra-person
+
+# ==========================================
+# ТОМА И СЕТИ
+# ==========================================
+
+volumes:
+  shared_fs:
+    driver: local
+    # Примечание: если I/O критически важен и нужна максимальная скорость, 
+    # на Linux лучше использовать bind mount (например: - ./host_data:/app/data)
+
+networks:
+  app-network:
+    driver: bridge

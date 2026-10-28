@@ -69,16 +69,17 @@
 
     </dl>
 
-    {% if publication.fulltext_url %}
         <div class="fulltext-link">
+          {% if publication.fulltext_url %}
             <a href="{{ publication.fulltext_url }}" target="_blank" rel="noopener">Читать полный текст</a>
-            <a href="{{ koha_url }}{{ publication.id }}" target="_blank" rel="noopener">Документ в каталоге НТБ</a>
+          {% endif %}
+          <a href="{{ koha_url }}{{ publication.id }}" target="_blank" rel="noopener">Документ в каталоге НТБ</a>
         </div>
-    {% endif %}
 
-    <!--div>
-      Debug: {{ publication }}
-    </div-->
+    <div>
+      Debug: {{ publication.cite }}
+      Debug: {{ publication.type }}
+    </div>
 
 </article>
 
