@@ -299,6 +299,30 @@ def parse_publication_record(record) -> Publication:
             except ValueError:
                 year = None
 
+    # Fallback для аналитических записей и многотомников
+    if not city or not publisher or not year:
+        for tag in ('461', '463'):
+            for df in _find_datafields(record, tag):
+                if not city:
+                    c = _get_first_subfield(df, 'c')
+                    if c:
+                        city = c.strip()
+                if not publisher:
+                    g = _get_first_subfield(df, 'g')
+                    if g:
+                        # В UNIMARC 461$g часто содержит "Вуз ; науч. рук."
+                        # Берем часть до первой точки с запятой как название издательства
+                        publisher = g.split(';')[0].strip()
+                if not year:
+                    d = _get_first_subfield(df, 'd')
+                    if d:
+                        try:
+                            year = int(d.strip()[:4])
+                        except ValueError:
+                            pass
+    # --------------------------------------------------------------------------------
+
+
     # Объём: 215$a
     pages = None
     df_215_list = _find_datafields(record, '215')

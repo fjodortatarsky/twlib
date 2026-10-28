@@ -110,6 +110,17 @@ class MarcBibFormatter:
                 return True
         return False
 
+    def get_bib_type(self, rec: ET._Element) -> str:
+      if self.is_patent(rec):
+        return "patent"
+      if self.is_monograph(rec):
+        return "monograph"
+      if self.is_analytics(rec):
+        return "analytics"
+      if self.is_multilevel_volume(rec):
+        return "analytics"
+      return None
+
     # --- ГЕНЕРАЦИЯ ПОЛЕЙ (DOMAINS) ---
 
     def get_bib_id(self, rec: ET._Element) -> Optional[str]:
@@ -182,10 +193,10 @@ class MarcBibFormatter:
                 if f := self.get_subfield(rec, '461', 'f'): parts.append(f" / {f}")
                 if g := self.get_subfield(rec, '461', 'g'): parts.append(f" ; {g}")
                 if e := self.get_subfield(rec, '461', 'e'): parts.append(f". — {e}")
-                c463, d463 = self.get_subfield(rec, '463', 'c'), self.get_subfield(rec, '463', 'd')
-                if d463:
-                    s = ". — " + (f"{c463}, " if c463 else "") + d463
-                    parts.append(s)
+                #c463, d463 = self.get_subfield(rec, '463', 'c'), self.get_subfield(rec, '463', 'd')
+                #if d463:
+                #    s = ". — " + (f"{c463}, " if c463 else "") + d463
+                #    parts.append(s)
                 if t463 := self.get_subfield(rec, '463', 't'): parts.append(f". — {t463}")
                 if v463 := self.get_subfield(rec, '463', 'v'): parts.append(f". — {v463}")
             else:
@@ -230,6 +241,24 @@ class MarcBibFormatter:
                 
             if d:
                 # Исправление: добавляем запятую только если уже есть место издания или издательство
+                if parts:
+                    parts.append(f", {d}")
+                else:
+                    parts.append(d)
+        elif self.is_analytics(rec):
+            a1 = self.get_subfield(rec, '461', 'c') or self.get_subfield(rec, '463', 'c') or self.get_subfield(rec, '210', 'a')
+            c = self.get_subfield(rec, '461', 'g') or self.get_subfield(rec, '463', 'g') or self.get_subfield(rec, '210', 'c')
+            d = self.get_subfield(rec, '461', 'd') or self.get_subfield(rec, '463', 'd') or self.get_subfield(rec, '210', 'd')
+            
+            # Отсекаем научного руководителя, если он попал в поле издательства
+            if c and ';' in c:
+                c = c.split(';')[0].strip()
+                
+            if a1:
+                parts.append(a1)
+            if c:
+                parts.append(f" : {c}")
+            if d:
                 if parts:
                     parts.append(f", {d}")
                 else:
@@ -392,7 +421,8 @@ class MarcBibFormatter:
             'subjects': self.get_subjects(rec),
             'cite': self.get_cite(rec),
             'url': self.get_subfield(rec, '856', 'u'),
-            'referat': self.get_subfield(rec, '330', 'a')
+            'referat': self.get_subfield(rec, '330', 'a'),
+            'type': self.get_bib_type(rec)
         }
 
     def process_response(self) -> List[Dict[str, Any]]:

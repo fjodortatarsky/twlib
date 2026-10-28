@@ -15,6 +15,8 @@ import logging
 
 import requests
 
+from .config import Config
+
 from . import parsers
 
 from .marc import MarcBibFormatter
@@ -24,9 +26,9 @@ import concurrent.futures
 logger = logging.getLogger(__name__)
 
 # Адреса SRU-серверов (предположения)
-BIBLIOGRAPHIC_URL = 'http://localhost:9991/'
-AUTHOR_AUTHORITY_URL = 'http://localhost:9999/'
-DEPARTMENT_AUTHORITY_URL = 'http://localhost:9999/'  # предположение
+BIBLIOGRAPHIC_URL = Config.BIBLIOGRAPHIC_URL
+AUTHOR_AUTHORITY_URL = Config.AUTHOR_AUTHORITY_URL
+DEPARTMENT_AUTHORITY_URL = Config.DEPARTMENT_AUTHORITY_URL
 
 DEFAULT_TIMEOUT = 10
 DEFAULT_MAX_RECORDS = 500
