@@ -34,7 +34,7 @@ services:
       dockerfile: ./Dockerfile
     image: myapp/frontend:latest
     ports:
-      - "5005:5000" # Маппим порт хоста на порт контейнера
+      - "5000:5000" # Маппим порт хоста на порт контейнера
     environment:
       - FLASK_APP=app.py
       - FLASK_ENV=production
