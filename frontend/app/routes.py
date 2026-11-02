@@ -243,6 +243,7 @@ def author(authority_id):
         categories=categories,
         total_all=total_all,
         about_count=about_count,
+        picture_base_url=Config.PICTURE_BASE_URL,
         pagination={
             'current': page,
             'total': total,

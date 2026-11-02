@@ -49,6 +49,26 @@ services:
       - zebra-bib
       - zebra-person
 
+  picstore:
+    build:
+      context: ./picstore
+      dockerfile: ./Dockerfile
+    image: myapp/picstore:latest
+    ports:
+      - "5001:5000" # Маппим порт хоста на порт контейнера
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=production
+    volumes:
+      - ./picstore/data:/app/data
+    user: "1000:1000"
+    networks:
+      - app-network
+    restart: unless-stopped
+    depends_on:
+      - zebra-bib
+      - zebra-person
+
 # ==========================================
 # ТОМА И СЕТИ
 # ==========================================

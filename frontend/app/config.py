@@ -19,6 +19,11 @@ class Config:
         "http://localhost:9999/"
     )
 
+    PICTURE_BASE_URL = os.getenv(
+        "PICTURE_BASE_URL", 
+        "http://109.123.168.74:5001"
+    )
+
     # Числовые значения: обязательно оборачиваем в int(), так как getenv возвращает строку
     DEFAULT_TIMEOUT = int(os.getenv("DEFAULT_TIMEOUT", "10"))
     DEFAULT_MAX_RECORDS = int(os.getenv("DEFAULT_MAX_RECORDS", "500"))
