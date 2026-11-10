@@ -285,14 +285,12 @@ def department_index(letter):
 # ---------------------------------------------------------------------------
 # Подразделение
 # ---------------------------------------------------------------------------
-
 @bp.route("/department/<department_id>")
 def department(department_id):
-    """Экран подразделения. При недоступности БД — блок «Ошибка БД»."""
+    """Экран подразделения: публикации с пагинацией, сортировкой и категориями."""
     dep = stubs.get_department(department_id)
+
     if not dep:
-        # БД недоступна или подразделение не найдено —
-        # не рушим приложение, показываем диагностическое сообщение.
         return render_template(
             "department.html",
             department=None,
@@ -300,10 +298,89 @@ def department(department_id):
             publications=[],
         )
 
-    total, publications = stubs.get_publications_by_department(department_id)
+    # --- Параметры пагинации и сортировки ---
+    page = request.args.get("page", 1, type=int)
+    sort = request.args.get("sort", "date")
+    category = request.args.get("category")
+    per_page = 10
+
+    direction = "asc" if sort == "title" else "desc"
+
+    # --- Общее количество публикаций подразделения ---
+    total_all = stubs.get_publications_count_by_department(department_id)
+
+    # --- Собираем фасеты (категории) ---
+    categories = []
+    if total_all > 0:
+        for content_type_key, content_type_name in models.CONTENT_TYPES.items():
+            count = stubs.get_publications_count_by_department_content_type(
+                department_id,
+                content_type_key,
+            )
+            if count > 0:
+                categories.append({
+                    'key': content_type_key,
+                    'name': content_type_name,
+                    'count': count,
+                })
+
+    # --- Запрос публикаций ---
+    publications = []
+    total = 0
+
+    if category and category in models.CONTENT_TYPES:
+        total, publications = stubs.get_publications_by_department(
+            department_id,
+            page=page,
+            per_page=per_page,
+            sort=direction,
+            content_type=category,
+        )
+    else:
+        total, publications = stubs.get_publications_by_department(
+            department_id,
+            page=page,
+            per_page=per_page,
+            sort=direction,
+        )
+
+    if total == 0:
+        total = total_all
+
+    # --- Добавляем специальный фасет "Все" ---
+    categories.insert(0, {
+        'key': 'all',
+        'name': 'Все',
+        'count': None,
+    })
+
+    # --- Построение диапазонов для пагинатора ---
+    total_pages = max(1, (total + per_page - 1) // per_page)
+    page = max(1, min(page, total_pages))
+
+    page_ranges = []
+    for p in range(1, total_pages + 1):
+        r_start = (p - 1) * per_page + 1
+        r_end = min(p * per_page, total)
+        page_ranges.append({
+            'page': p,
+            'label': f"{r_start}-{r_end}",
+            'current': p == page,
+        })
+
     return render_template(
         "department.html",
         department=dep,
         publications=publications,
         error=None,
+        sort=sort,
+        category=category,
+        categories=categories,
+        total_all=total_all,
+        pagination={
+            'current': page,
+            'total': total,
+            'ranges': page_ranges,
+        },
     )
+

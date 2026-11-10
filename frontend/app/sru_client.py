@@ -155,7 +155,7 @@ def get_author_index_letters() -> list[str]:
 def get_authors_by_letter(letter: str) -> list | None:
     """Список авторов, чья фамилия начинается с буквы."""
     # Ищем по полю фамилии (cuba.AuthorSurname) с маской * в конце
-    query = f'cuba.AuthorSurname="{letter}*"'
+    query = f'cuba.AuthorSurname="{letter}*" sortby cuba.AuthorSurname'
     result = author_authority.search_retrieve(query, maximum_records=DEFAULT_MAX_RECORDS)
     if result is None:
         return None
@@ -419,23 +419,79 @@ def get_department(department_id: str):
         return None
     return parsers.parse_department_record(records[0])
 
-
-def get_publications_by_department(department_id: str) -> tuple[int, list]:
-    """Публикации подразделения.
-
-    Предполагается, что в библио-БД поле 910$3 содержит ``department_id``
-    (поле 001 авторитетной записи подразделения), и есть точка доступа
-    ``cuba.DepartmentCode``.
-    """
+def get_publications_count_by_department(department_id: str) -> int:
+    """Общее количество публикаций подразделения."""
     query = f'cuba.AuthorityCorpCode={department_id}'
-    result = bibliographic.search_retrieve(query, maximum_records=DEFAULT_MAX_RECORDS)
+
+    result = bibliographic.search_retrieve(
+        query,
+        maximum_records=0,
+        start_record=1,
+    )
+
+    if result is None:
+        return 0
+
+    total, _ = result
+    return total
+
+def get_publications_count_by_department_content_type(
+    department_id: str,
+    content_type: str,
+) -> int:
+    """Количество публикаций подразделения по типу содержимого."""
+    query = f'cuba.AuthorityCorpCode={department_id} and cuba.ContentType={content_type}'
+
+    result = bibliographic.search_retrieve(
+        query,
+        maximum_records=0,
+        start_record=1,
+    )
+
+    if result is None:
+        return 0
+
+    total, _ = result
+    return total
+
+def get_publications_by_department(
+    department_id: str,
+    page: int = 1,
+    per_page: int = 10,
+    sort: str = "desc",
+    content_type: str | None = None,
+) -> tuple[int, list]:
+    """Публикации подразделения с пагинацией, сортировкой и фильтром по категории."""
+    base_query = f'cuba.AuthorityCorpCode={department_id}'
+
+    if content_type:
+        base_query += f' and cuba.ContentType={content_type}'
+
+    #if sort == "asc":
+    #    query = f'{base_query} sortBy title/sort.ascending'
+    #else:
+    #    query = f'{base_query} sortBy date/sort.descending'
+    query = f'{base_query}'
+
+    start_record = (page - 1) * per_page + 1
+
+    result = bibliographic.search_retrieve(
+        query,
+        maximum_records=per_page,
+        start_record=start_record,
+    )
+
     if result is None:
         return 0, []
-        # ...
-    total, records = result
-    publications = [parsers.parse_publication_record(r) for r in records]
-    return total, _enrich_publications(publications, records)
 
+    total, records = result
+
+    publications = [
+        parsers.parse_publication_record(r)
+        for r in records
+    ]
+
+    return total, _enrich_publications(publications, records)
 
 # ---------------------------------------------------------------------------
 # Поиск

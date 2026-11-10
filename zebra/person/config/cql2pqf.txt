@@ -36,7 +36,7 @@ index.cuba.CorpAuthor1idx    = 1=CorpAuthor1idx
 index.cuba.CorpAuthor2idx    = 1=CorpAuthor2idx
 index.cuba.CorpAuthor3idx    = 1=CorpAuthor3idx
 index.cuba.CorpAuthor    = 1=CorpAuthor
-index.cuba.AuthorSurname = 1=AuthorSurname
+index.cuba.AuthorSurname = 1=AuthorSurname 7=AuthorSurname
 index.cuba.LocalId       = 1=Local-number
 index.cuba.authorityAuthorCode = 1=Authority-author-code 
 index.cql.sortByDateDescending = 7=2 1=31 2
