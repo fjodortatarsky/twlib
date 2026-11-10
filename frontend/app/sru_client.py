@@ -419,14 +419,36 @@ def get_department(department_id: str):
         return None
     return parsers.parse_department_record(records[0])
 
+def _build_department_ccl_query(
+    department_id: str,
+    sort_attr: str,
+    content_type: str | None = None,
+) -> str:
+    """Формирует CCL-запрос для подразделения."""
+    base_query = f"@attr 1=Authority-corp-code {department_id}"
+
+    if content_type:
+        return (
+            f"@or @and {base_query} "
+            f"@attr 1=Content-type {content_type} "
+            f"@attr 7={sort_attr} @attr 1=31 0"
+        )
+
+    return f"@or {base_query} @attr 7={sort_attr} @attr 1=31 0"
+
 def get_publications_count_by_department(department_id: str) -> int:
     """Общее количество публикаций подразделения."""
-    query = f'cuba.AuthorityCorpCode={department_id}'
+    ccl = _build_department_ccl_query(
+        department_id,
+        '1',
+        None,
+    )
 
     result = bibliographic.search_retrieve(
-        query,
+        ccl,
         maximum_records=0,
         start_record=1,
+        query_param_name='x-pquery',
     )
 
     if result is None:
@@ -440,12 +462,17 @@ def get_publications_count_by_department_content_type(
     content_type: str,
 ) -> int:
     """Количество публикаций подразделения по типу содержимого."""
-    query = f'cuba.AuthorityCorpCode={department_id} and cuba.ContentType={content_type}'
+    ccl = _build_department_ccl_query(
+        department_id,
+        '1',
+        content_type,
+    )
 
     result = bibliographic.search_retrieve(
-        query,
+        ccl,
         maximum_records=0,
         start_record=1,
+        query_param_name='x-pquery',
     )
 
     if result is None:
@@ -462,23 +489,21 @@ def get_publications_by_department(
     content_type: str | None = None,
 ) -> tuple[int, list]:
     """Публикации подразделения с пагинацией, сортировкой и фильтром по категории."""
-    base_query = f'cuba.AuthorityCorpCode={department_id}'
+    sort_attr = '1' if sort == 'asc' else '2'
 
-    if content_type:
-        base_query += f' and cuba.ContentType={content_type}'
-
-    #if sort == "asc":
-    #    query = f'{base_query} sortBy title/sort.ascending'
-    #else:
-    #    query = f'{base_query} sortBy date/sort.descending'
-    query = f'{base_query}'
+    ccl = _build_department_ccl_query(
+        department_id,
+        sort_attr,
+        content_type,
+    )
 
     start_record = (page - 1) * per_page + 1
 
     result = bibliographic.search_retrieve(
-        query,
+        ccl,
         maximum_records=per_page,
         start_record=start_record,
+        query_param_name='x-pquery',
     )
 
     if result is None:

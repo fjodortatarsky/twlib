@@ -309,9 +309,13 @@ def department(department_id):
     # --- Общее количество публикаций подразделения ---
     total_all = stubs.get_publications_count_by_department(department_id)
 
+    print("department_id:", department_id)
+    print("total_all:", total_all)
+
     # --- Собираем фасеты (категории) ---
     categories = []
     if total_all > 0:
+        print(":", models.CONTENT_TYPES)
         for content_type_key, content_type_name in models.CONTENT_TYPES.items():
             count = stubs.get_publications_count_by_department_content_type(
                 department_id,
@@ -323,6 +327,7 @@ def department(department_id):
                     'name': content_type_name,
                     'count': count,
                 })
+    print("categories:", categories)
 
     # --- Запрос публикаций ---
     publications = []
