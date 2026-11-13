@@ -80,7 +80,14 @@
         {% if author.identifiers_017 %}
             <ul class="author-identifiers">
                 {% for item in author.identifiers_017 %}
-                    <li>{{ item.source }} {{ item.value }}</li>
+                <li>
+                {{ item.source }}
+                {% if item.url %}
+                <a href="{{ item.url }}" target="_blank" rel="noopener">{{ item.value }}</a>
+                {% else %}
+                {{ item.value }}
+                {% endif %}
+                </li>
                 {% endfor %}
             </ul>
         {% endif %}

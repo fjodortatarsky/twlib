@@ -96,6 +96,24 @@ def _normalize_id(value: str) -> str:
         return None
     return value.translate(_ID_STRIP_TABLE)
 
+
+# Шаблоны ссылок для идентификаторов из 017: ключ — 017$2 в нижнем регистре
+_IDENTIFIER_URL_TEMPLATES = {
+    'elibrary':   'https://elibrary.ru/author_profile.asp?authorid={value}',
+    'orcid':      'https://orcid.org/{value}',
+    'scopus':     'https://www.scopus.com/authid/detail.uri?authorId={value}',
+    'tpustaffid': 'https://staff.tpu.ru/personal/employee?lid={value}',
+    'viaf':       'https://viaf.org/ru/viaf/{value}',
+}
+
+
+def _identifier_url(source, value):
+    """Ссылка на профиль по источнику (017$2) и номеру (017$a). None, если источник неизвестен."""
+    template = _IDENTIFIER_URL_TEMPLATES.get((source or '').strip().lower())
+    if not template or not value:
+        return None
+    return template.format(value=value.strip())
+
 # ---------------------------------------------------------------------------
 # Парсинг оболочек (searchRetrieve / scan)
 # ---------------------------------------------------------------------------
@@ -220,7 +238,11 @@ def parse_author_record(record) -> Author:
         source = _get_first_subfield(df, '2') or ''
         number = _get_first_subfield(df, 'a') or ''
         if source or number:
-            identifiers_017.append({'source': source, 'value': number})
+            identifiers_017.append({
+                'source': source,
+                'value': number,
+                'url': _identifier_url(source, number),
+            })
 
     # Фото / профиль: 856$u
     photo_url = None

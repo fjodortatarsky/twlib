@@ -371,6 +371,7 @@ a.letter-link:hover {
 }
 
 .author-bio {
+   text-indent: 1.5em;
    text-align: justify;
    hyphens: auto;
    -webkit-hyphens: auto;

@@ -98,6 +98,14 @@ department_authority = SRUClient(DEPARTMENT_AUTHORITY_URL)
 # Индексы авторов
 # ---------------------------------------------------------------------------
 
+def _escape_cql(value: str) -> str:
+    """Экранирует значение для использования внутри CQL-строки в двойных кавычках."""
+    if value is None:
+        return ""
+    # Порядок важен: сначала backslash, затем кавычка
+    return value.replace("\\", "\\\\").replace('"', '\\"')
+
+
 def _sort_letters(letters: list[str]) -> list[str]:
     """Сортирует список букв: сначала кириллица, потом латиница.
 
@@ -155,7 +163,8 @@ def get_author_index_letters() -> list[str]:
 def get_authors_by_letter(letter: str) -> list | None:
     """Список авторов, чья фамилия начинается с буквы."""
     # Ищем по полю фамилии (cuba.AuthorSurname) с маской * в конце
-    query = f'cuba.AuthorSurname="{letter}*" sortby cuba.AuthorSurname'
+    safe_letter = _escape_cql(letter)
+    query = f'cuba.AuthorSurname="{safe_letter}*" sortby cuba.AuthorSurname'
     result = author_authority.search_retrieve(query, maximum_records=DEFAULT_MAX_RECORDS)
     if result is None:
         return None
@@ -394,7 +403,8 @@ def get_department_index_letters() -> list[str]:
 def get_departments_by_letter(letter: str) -> list | None:
     """Список подразделений, чьё название начинается с буквы."""
     # Ищем по полю корпоративного автора (cuba.CorpAuthor) с маской * в конце
-    query = f'cuba.CorpAuthor="{letter}*"'
+    safe_letter = _escape_cql(letter)
+    query = f'cuba.CorpAuthor="{safe_letter}*"'
     result = department_authority.search_retrieve(query, maximum_records=DEFAULT_MAX_RECORDS)
     if result is None:
         return None
