@@ -193,30 +193,32 @@ class MarcBibFormatter:
                 if o := self.get_subfield(rec, '461', 'o'): parts.append(f" : {o}")
                 if f := self.get_subfield(rec, '461', 'f'): parts.append(f" / {f}")
                 if g := self.get_subfield(rec, '461', 'g'): parts.append(f" ; {g}")
-                if e := self.get_subfield(rec, '461', 'e'): parts.append(f"{self.SEP} {e}")
+                if e := self.get_subfield(rec, '461', 'e'): parts.append(f"{self.SEP}{e}")
                 #c463, d463 = self.get_subfield(rec, '463', 'c'), self.get_subfield(rec, '463', 'd')
                 #if d463:
                 #    s = ". — " + (f"{c463}, " if c463 else "") + d463
                 #    parts.append(s)
                 if d := (self.get_subfield(rec, '463', 'd') or self.get_subfield(rec, '461', 'd')):
                     parts.append(f"{self.SEP}{d}")
-                if t463 := self.get_subfield(rec, '463', 't'): parts.append(f"{self.SEP} {t463}")
-                if v463 := self.get_subfield(rec, '463', 'v'): parts.append(f"{self.SEP} {v463}")
+                if t463 := self.get_subfield(rec, '463', 't'): parts.append(f"{self.SEP}{t463}")
+                if v463 := self.get_subfield(rec, '463', 'v'): parts.append(f"{self.SEP}{v463}")
             else:
                 if t463 := self.get_subfield(rec, '463', 't'): parts.append(t463)
-                if o := self.get_subfield(rec, '463', 'o'): parts.append(f" : {o}")
+                if o := self.get_subfield(rec, '463', 'o'): 
+                   if o.endswith(' г.'): o = o[:-3]   # чтобы не было "…2025 г.. - 2025"
+                   parts.append(f" : {o}")
                 if f := self.get_subfield(rec, '463', 'f'): parts.append(f" / {f}")
                 if g := self.get_subfield(rec, '463', 'g'): parts.append(f" ; {g}")
-                if e := self.get_subfield(rec, '463', 'e'): parts.append(f"{self.SEP} {e}")
+                if e := self.get_subfield(rec, '463', 'e'): parts.append(f"{self.SEP}{e}")
                 #c463, d463 = self.get_subfield(rec, '463', 'c'), self.get_subfield(rec, '463', 'd')
                 #if d463:
                 #    s = ". — " + (f"{c463}, " if c463 else "") + d463
 
                 if d := (self.get_subfield(rec, '463', 'd') or self.get_subfield(rec, '210', 'd')):
                     parts.append(f"{self.SEP}{d}")
-                if v463 := self.get_subfield(rec, '463', 'v'): parts.append(f"{self.SEP} {v463}")
+                if v463 := self.get_subfield(rec, '463', 'v'): parts.append(f"{self.SEP}{v463}")
             if a371 := self.get_subfield(rec, '371', 'a'):
-                if val := self.DICT_371A.get(a371): parts.append(f"{self.SEP} {val}")
+                if val := self.DICT_371A.get(a371): parts.append(f"{self.SEP}{val}")
         elif self.is_multilevel_volume(rec):
             if t := self.get_subfield(rec, '461', 't'): parts.append(t)
             if l := self.get_subfield(rec, '461', 'l'): parts.append(f". {l.capitalize()}")

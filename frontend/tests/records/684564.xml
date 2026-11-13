@@ -1,0 +1,128 @@
+<collection xmlns="http://www.loc.gov/MARC21/slim">
+<record>
+  <leader>04983naa2a2200421   4500</leader>
+  <controlfield tag="001">684564</controlfield>
+  <controlfield tag="005">20260623115006.0</controlfield>
+  <datafield tag="090" ind1=" " ind2=" ">
+    <subfield code="a">684564</subfield>
+  </datafield>
+  <datafield tag="100" ind1=" " ind2=" ">
+    <subfield code="a">20260129d2026    k||y0rusy50      ca</subfield>
+  </datafield>
+  <datafield tag="101" ind1="0" ind2=" ">
+    <subfield code="a">rus</subfield>
+  </datafield>
+  <datafield tag="102" ind1=" " ind2=" ">
+    <subfield code="a">RU</subfield>
+  </datafield>
+  <datafield tag="135" ind1=" " ind2=" ">
+    <subfield code="a">drcn ---uucaa</subfield>
+  </datafield>
+  <datafield tag="181" ind1=" " ind2="0">
+    <subfield code="a">i </subfield>
+    <subfield code="b">   e  </subfield>
+  </datafield>
+  <datafield tag="182" ind1=" " ind2="0">
+    <subfield code="a">b</subfield>
+  </datafield>
+  <datafield tag="183" ind1=" " ind2="0">
+    <subfield code="a">cr</subfield>
+    <subfield code="2">RDAcarrier</subfield>
+  </datafield>
+  <datafield tag="200" ind1="1" ind2=" ">
+    <subfield code="a">Обезвреживание сточных вод и опасных отходов в сверхкритическом водокислородном флюиде (обзор)</subfield>
+    <subfield code="d">Neutralization of effluent water and dangerous waste in supercritical water-oxygen fluid (review)</subfield>
+    <subfield code="f">О. Н. Федяева, П. А. Стрижак</subfield>
+    <subfield code="z">eng</subfield>
+  </datafield>
+  <datafield tag="203" ind1=" " ind2=" ">
+    <subfield code="a">Текст</subfield>
+    <subfield code="c">электронный</subfield>
+    <subfield code="b">визуальный</subfield>
+  </datafield>
+  <datafield tag="283" ind1=" " ind2=" ">
+    <subfield code="a">online_resource</subfield>
+    <subfield code="2">RDAcarrier</subfield>
+  </datafield>
+  <datafield tag="300" ind1=" " ind2=" ">
+    <subfield code="a">Заглавие с экрана</subfield>
+  </datafield>
+  <datafield tag="320" ind1=" " ind2=" ">
+    <subfield code="a">Литература: 95 назв</subfield>
+  </datafield>
+  <datafield tag="330" ind1=" " ind2=" ">
+    <subfield code="a">Проанализированы основные достижения в области обезвреживания сточных вод и опасных галогенсодержащих отходов посредством окисления в воде в сверхкритическом состоянии (температура t &gt;374°С, давление p &gt; 22.1 МПа). Выявлены критерии, определяющие эффективность окисления. Сформулированы проблемы, связанные с практической реализацией обсуждаемого подхода, к которым относятся прежде всего коррозия конструкционных материалов и осаждение солей. Описаны технические решения, обеспечивающие повышение эффективности обезвреживания отходов, снижение коррозии и предотвращение блокирования трубопроводов твердыми частицами и минеральными компонентами. Рассмотрены экологические и экономические аспекты промышленного использования сверхкритического водного окисления. Определены условия повышения энергетической и экологической эффективности совместного окисления отходов с традиционными видами топлива. Отмечены перспективы применения сверхкритического водного окисления на ТЭС на ультрасверхкритические параметры пара</subfield>
+  </datafield>
+  <datafield tag="330" ind1=" " ind2=" ">
+    <subfield code="a">The article analyzes the main achievements in the field of neutralizing effluent water and dangerous halogen containing waste by oxidizing them in water in supercritical state (at temperature t &gt; 374°С and pressure p &gt; 22.1 MPa). Criteria determining the oxidation efficiency are revealed. Problems connected with practical implementation of the discussed approach are formulated, first of all, corrosion of structural materials and deposition of salts. Technical solutions that help improve waste neutralization efficiency, reduce corrosion, and prevent pipelines becoming blocked with solid particles and mineral components are described. The environmental and economic aspects of industrial application of supercritical water oxidation are considered. The conditions for achieving better energy and environmental efficiency of oxidizing waste jointly with conventional fuel kinds are determined. Prospects of applying supercritical water oxidation at thermal power plants for ultrasupercritical steam conditions are noted</subfield>
+  </datafield>
+  <datafield tag="336" ind1=" " ind2=" ">
+    <subfield code="a">Текстовый файл</subfield>
+  </datafield>
+  <datafield tag="461" ind1=" " ind2="1">
+    <subfield code="9">380578</subfield>
+    <subfield code="t">Теплоэнергетика</subfield>
+    <subfield code="l">Thermal Engineering</subfield>
+    <subfield code="c">Москва</subfield>
+    <subfield code="n">Наука</subfield>
+    <subfield code="x">0040-3636</subfield>
+  </datafield>
+  <datafield tag="463" ind1=" " ind2="1">
+    <subfield code="9">685796</subfield>
+    <subfield code="t">№ 1</subfield>
+    <subfield code="v">С. 3-17</subfield>
+    <subfield code="d">2026</subfield>
+  </datafield>
+  <datafield tag="610" ind1="1" ind2=" ">
+    <subfield code="a">электронный ресурс</subfield>
+  </datafield>
+  <datafield tag="610" ind1="1" ind2=" ">
+    <subfield code="a">труды учёных ТПУ</subfield>
+  </datafield>
+  <datafield tag="610" ind1="1" ind2=" ">
+    <subfield code="a">сточные воды</subfield>
+  </datafield>
+  <datafield tag="610" ind1="1" ind2=" ">
+    <subfield code="a">опасные отходы</subfield>
+  </datafield>
+  <datafield tag="610" ind1="1" ind2=" ">
+    <subfield code="a">сверхкритическое водное окисление</subfield>
+  </datafield>
+  <datafield tag="610" ind1="1" ind2=" ">
+    <subfield code="a">коррозия</subfield>
+  </datafield>
+  <datafield tag="610" ind1="1" ind2=" ">
+    <subfield code="a">конструкционные материалы</subfield>
+  </datafield>
+  <datafield tag="610" ind1="1" ind2=" ">
+    <subfield code="a">осаждение солей</subfield>
+  </datafield>
+  <datafield tag="700" ind1=" " ind2="1">
+    <subfield code="a">Федяева</subfield>
+    <subfield code="b">О. Н.</subfield>
+    <subfield code="g">Оксана Николаевна</subfield>
+  </datafield>
+  <datafield tag="701" ind1=" " ind2="1">
+    <subfield code="a">Стрижак</subfield>
+    <subfield code="b">П. А.</subfield>
+    <subfield code="c">специалист в области теплоэнергетики</subfield>
+    <subfield code="c">профессор Томского политехнического университета, доктор физико-математических наук</subfield>
+    <subfield code="f">1985-</subfield>
+    <subfield code="g">Павел Александрович</subfield>
+    <subfield code="9">11832</subfield>
+  </datafield>
+  <datafield tag="801" ind1=" " ind2="0">
+    <subfield code="a">RU</subfield>
+    <subfield code="b">63413507</subfield>
+    <subfield code="c">20260129</subfield>
+    <subfield code="g">RCR</subfield>
+  </datafield>
+  <datafield tag="856" ind1="4" ind2="0">
+    <subfield code="u">https://elibrary.ru/item.asp?id=88778788</subfield>
+    <subfield code="z">https://elibrary.ru/item.asp?id=88778788</subfield>
+  </datafield>
+  <datafield tag="942" ind1=" " ind2=" ">
+    <subfield code="c">CF</subfield>
+  </datafield>
+</record>
+</collection>

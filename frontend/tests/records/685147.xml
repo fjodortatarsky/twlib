@@ -1,0 +1,104 @@
+<collection xmlns="http://www.loc.gov/MARC21/slim">
+<record>
+  <leader>02050naa0a2200325   4500</leader>
+  <controlfield tag="001">685147</controlfield>
+  <controlfield tag="005">20260225092809.0</controlfield>
+  <datafield tag="090" ind1=" " ind2=" ">
+    <subfield code="a">685147</subfield>
+  </datafield>
+  <datafield tag="100" ind1=" " ind2=" ">
+    <subfield code="a">20260225d2025    k||y0rusy50      ca</subfield>
+  </datafield>
+  <datafield tag="101" ind1="2" ind2=" ">
+    <subfield code="a">rus</subfield>
+  </datafield>
+  <datafield tag="102" ind1=" " ind2=" ">
+    <subfield code="a">RU</subfield>
+  </datafield>
+  <datafield tag="135" ind1=" " ind2=" ">
+    <subfield code="a">drcn ---uucaa</subfield>
+  </datafield>
+  <datafield tag="181" ind1=" " ind2="0">
+    <subfield code="a">i </subfield>
+    <subfield code="b">   e  </subfield>
+  </datafield>
+  <datafield tag="182" ind1=" " ind2="0">
+    <subfield code="a">b</subfield>
+  </datafield>
+  <datafield tag="183" ind1=" " ind2="0">
+    <subfield code="a">cr</subfield>
+    <subfield code="2">RDAcarrier</subfield>
+  </datafield>
+  <datafield tag="200" ind1="1" ind2=" ">
+    <subfield code="a">Определение оптимальных условий регазификации газового гидрата</subfield>
+    <subfield code="f">М. В. Школа, Н. Е. Шлегель, П. А. Стрижак</subfield>
+  </datafield>
+  <datafield tag="203" ind1=" " ind2=" ">
+    <subfield code="a">Текст</subfield>
+    <subfield code="b">визуальный</subfield>
+    <subfield code="c">электронный</subfield>
+  </datafield>
+  <datafield tag="283" ind1=" " ind2=" ">
+    <subfield code="a">online_resource</subfield>
+    <subfield code="2">RDAcarrier</subfield>
+  </datafield>
+  <datafield tag="320" ind1=" " ind2=" ">
+    <subfield code="a">Список литературы: 3 назв</subfield>
+  </datafield>
+  <datafield tag="336" ind1=" " ind2=" ">
+    <subfield code="a">Текстовый файл</subfield>
+  </datafield>
+  <datafield tag="463" ind1=" " ind2="1">
+    <subfield code="t">Добыча, подготовка, транспорт нефти и газа</subfield>
+    <subfield code="o">материалы XI Международной конференции, посвященной 55-летию Института химии нефти СО РАН, Томск, 29 Сентября-3 Октября 2025 г.</subfield>
+    <subfield code="v">С. 230-231</subfield>
+    <subfield code="c">Томск</subfield>
+    <subfield code="d">2025</subfield>
+    <subfield code="n">ИХН СО РАН</subfield>
+  </datafield>
+  <datafield tag="610" ind1="1" ind2=" ">
+    <subfield code="a">труды учёных ТПУ</subfield>
+  </datafield>
+  <datafield tag="610" ind1="1" ind2=" ">
+    <subfield code="a">электронный ресурс</subfield>
+  </datafield>
+  <datafield tag="700" ind1=" " ind2="1">
+    <subfield code="a">Школа</subfield>
+    <subfield code="b">М. В.</subfield>
+    <subfield code="g">Мария Валерьевна</subfield>
+  </datafield>
+  <datafield tag="701" ind1=" " ind2="1">
+    <subfield code="a">Шлегель</subfield>
+    <subfield code="b">Н. Е.</subfield>
+    <subfield code="c">специалист в области теплоэнергетики</subfield>
+    <subfield code="c">инженер-исследователь Томского политехнического университета</subfield>
+    <subfield code="f">1995-</subfield>
+    <subfield code="g">Никита Евгеньевич</subfield>
+    <subfield code="9">22330</subfield>
+  </datafield>
+  <datafield tag="701" ind1=" " ind2="1">
+    <subfield code="a">Стрижак</subfield>
+    <subfield code="b">П. А.</subfield>
+    <subfield code="c">специалист в области теплоэнергетики</subfield>
+    <subfield code="c">профессор Томского политехнического университета, доктор физико-математических наук</subfield>
+    <subfield code="f">1985-</subfield>
+    <subfield code="g">Павел Александрович</subfield>
+    <subfield code="9">11832</subfield>
+  </datafield>
+  <datafield tag="801" ind1=" " ind2="0">
+    <subfield code="a">RU</subfield>
+    <subfield code="b">63413507</subfield>
+    <subfield code="c">20260225</subfield>
+  </datafield>
+  <datafield tag="850" ind1=" " ind2=" ">
+    <subfield code="a">63413507</subfield>
+  </datafield>
+  <datafield tag="856" ind1="4" ind2="0">
+    <subfield code="u">https://www.elibrary.ru/item.asp?id=83018260</subfield>
+    <subfield code="z">https://www.elibrary.ru/item.asp?id=83018260</subfield>
+  </datafield>
+  <datafield tag="942" ind1=" " ind2=" ">
+    <subfield code="c">CF</subfield>
+  </datafield>
+</record>
+</collection>
