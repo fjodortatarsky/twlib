@@ -5,7 +5,6 @@ class MarcBibFormatter:
     # Пространства имен, используемые в MARCXML и вашем XSLT
     NS = {
         'slim': 'http://www.loc.gov/MARC21/slim',
-        'marc': 'http://www.loc.gov/MARC21/slim',
         'zs': 'http://www.loc.gov/zing/srw/',
         'bib': 'http://www.komlog.ru/ns/bib-1.0'
     }
@@ -24,6 +23,8 @@ class MarcBibFormatter:
         'Foreign_agent': 'Данное сообщение (материал) создано и (или) распространено иностранным СМИ, выполняющим функции иностранного агента, и (или) российским юридическим лицом, выполняющим функции иностранного агента'
     }
 
+    SEP = ". — "
+
     def __init__(self, xml_input: Union[str, bytes, ET._Element]):
         if isinstance(xml_input, (str, bytes)):
             self.root = ET.fromstring(xml_input if isinstance(xml_input, bytes) else xml_input.encode('utf-8'))
@@ -35,13 +36,13 @@ class MarcBibFormatter:
     def _find_datafields(self, rec: ET._Element, tag: str) -> List[ET._Element]:
         res = []
         # Ищем во всех возможных неймспейсах (slim и marc)
-        for df in rec.findall('.//slim:datafield', self.NS) + rec.findall('.//marc:datafield', self.NS):
+        for df in rec.findall('.//slim:datafield', self.NS):
             if df.get('tag') == tag:
                 res.append(df)
         return res
 
     def get_controlfield(self, rec: ET._Element, tag: str) -> Optional[str]:
-        for cf in rec.findall('.//slim:controlfield', self.NS) + rec.findall('.//marc:controlfield', self.NS):
+        for cf in rec.findall('.//slim:controlfield', self.NS):
             if cf.get('tag') == tag and cf.text:
                 return cf.text.strip()
         return None
@@ -50,7 +51,7 @@ class MarcBibFormatter:
         for df in self._find_datafields(rec, tag):
             if ind1 is not None and df.get('ind1') != ind1: continue
             if ind2 is not None and df.get('ind2') != ind2: continue
-            for sf in df.findall('slim:subfield', self.NS) + df.findall('marc:subfield', self.NS):
+            for sf in df.findall('slim:subfield', self.NS):
                 if sf.get('code') == code and sf.text:
                     return sf.text.strip()
         return None
@@ -60,7 +61,7 @@ class MarcBibFormatter:
         for df in self._find_datafields(rec, tag):
             if ind1 is not None and df.get('ind1') != ind1: continue
             if ind2 is not None and df.get('ind2') != ind2: continue
-            for sf in df.findall('slim:subfield', self.NS) + df.findall('marc:subfield', self.NS):
+            for sf in df.findall('slim:subfield', self.NS):
                 if sf.get('code') == code and sf.text:
                     res.append(sf.text.strip())
         return res
@@ -70,7 +71,7 @@ class MarcBibFormatter:
         for df in self._find_datafields(rec, tag):
             if ind1 is not None and df.get('ind1') != ind1: continue
             if ind2 is not None and df.get('ind2') != ind2: continue
-            for sf in df.findall('slim:subfield', self.NS) + df.findall('marc:subfield', self.NS):
+            for sf in df.findall('slim:subfield', self.NS):
                 if sf.get('code') == code and sf.text:
                     if count == index:
                         return sf.text.strip()
@@ -78,7 +79,7 @@ class MarcBibFormatter:
         return None
 
     def get_leader(self, rec: ET._Element) -> str:
-        lead = rec.find('.//slim:leader', self.NS) or rec.find('.//marc:leader', self.NS)
+        lead = rec.find('.//slim:leader', self.NS)
         if lead is not None and lead.text:
             return lead.text
         cf000 = self.get_controlfield(rec, '000')
@@ -192,26 +193,30 @@ class MarcBibFormatter:
                 if o := self.get_subfield(rec, '461', 'o'): parts.append(f" : {o}")
                 if f := self.get_subfield(rec, '461', 'f'): parts.append(f" / {f}")
                 if g := self.get_subfield(rec, '461', 'g'): parts.append(f" ; {g}")
-                if e := self.get_subfield(rec, '461', 'e'): parts.append(f". — {e}")
+                if e := self.get_subfield(rec, '461', 'e'): parts.append(f"{self.SEP} {e}")
                 #c463, d463 = self.get_subfield(rec, '463', 'c'), self.get_subfield(rec, '463', 'd')
                 #if d463:
                 #    s = ". — " + (f"{c463}, " if c463 else "") + d463
                 #    parts.append(s)
-                if t463 := self.get_subfield(rec, '463', 't'): parts.append(f". — {t463}")
-                if v463 := self.get_subfield(rec, '463', 'v'): parts.append(f". — {v463}")
+                if d := (self.get_subfield(rec, '463', 'd') or self.get_subfield(rec, '461', 'd')):
+                    parts.append(f"{self.SEP}{d}")
+                if t463 := self.get_subfield(rec, '463', 't'): parts.append(f"{self.SEP} {t463}")
+                if v463 := self.get_subfield(rec, '463', 'v'): parts.append(f"{self.SEP} {v463}")
             else:
                 if t463 := self.get_subfield(rec, '463', 't'): parts.append(t463)
                 if o := self.get_subfield(rec, '463', 'o'): parts.append(f" : {o}")
                 if f := self.get_subfield(rec, '463', 'f'): parts.append(f" / {f}")
                 if g := self.get_subfield(rec, '463', 'g'): parts.append(f" ; {g}")
-                if e := self.get_subfield(rec, '463', 'e'): parts.append(f". — {e}")
-                c463, d463 = self.get_subfield(rec, '463', 'c'), self.get_subfield(rec, '463', 'd')
-                if d463:
-                    s = ". — " + (f"{c463}, " if c463 else "") + d463
-                    parts.append(s)
-                if v463 := self.get_subfield(rec, '463', 'v'): parts.append(f". — {v463}")
+                if e := self.get_subfield(rec, '463', 'e'): parts.append(f"{self.SEP} {e}")
+                #c463, d463 = self.get_subfield(rec, '463', 'c'), self.get_subfield(rec, '463', 'd')
+                #if d463:
+                #    s = ". — " + (f"{c463}, " if c463 else "") + d463
+
+                if d := (self.get_subfield(rec, '463', 'd') or self.get_subfield(rec, '210', 'd')):
+                    parts.append(f"{self.SEP}{d}")
+                if v463 := self.get_subfield(rec, '463', 'v'): parts.append(f"{self.SEP} {v463}")
             if a371 := self.get_subfield(rec, '371', 'a'):
-                if val := self.DICT_371A.get(a371): parts.append(f". — {val}")
+                if val := self.DICT_371A.get(a371): parts.append(f"{self.SEP} {val}")
         elif self.is_multilevel_volume(rec):
             if t := self.get_subfield(rec, '461', 't'): parts.append(t)
             if l := self.get_subfield(rec, '461', 'l'): parts.append(f". {l.capitalize()}")
@@ -246,6 +251,9 @@ class MarcBibFormatter:
                 else:
                     parts.append(d)
         elif self.is_analytics(rec):
+            # Журнальная статья: город не выводим, год уже в domain2
+            return ""
+
             a1 = self.get_subfield(rec, '461', 'c') or self.get_subfield(rec, '463', 'c') or self.get_subfield(rec, '210', 'a')
             c = self.get_subfield(rec, '461', 'g') or self.get_subfield(rec, '463', 'g') or self.get_subfield(rec, '210', 'c')
             d = self.get_subfield(rec, '461', 'd') or self.get_subfield(rec, '463', 'd') or self.get_subfield(rec, '210', 'd')
@@ -367,7 +375,7 @@ class MarcBibFormatter:
         return res
 
     def get_subfield_from_df(self, df: ET._Element, code: str) -> str:
-        for sf in df.findall('slim:subfield', self.NS) + df.findall('marc:subfield', self.NS):
+        for sf in df.findall('slim:subfield', self.NS):
             if sf.get('code') == code and sf.text:
                 return sf.text.strip()
         return ""
@@ -391,8 +399,8 @@ class MarcBibFormatter:
         valid_domains = [d for d in domains if d]
         if valid_domains:
             if content and not(self.is_analytics(rec)) and not(self.is_multilevel_volume(rec)):
-                content += ". — "
-            content += ". — ".join(valid_domains)
+                content += self.SEP
+            content += self.SEP.join(valid_domains)
             
         # Реализация шаблона dedot
         while ".." in content:
